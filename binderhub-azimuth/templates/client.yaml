@@ -6,4 +6,4 @@ metadata:
 spec:
   reservationName: {{ include "binderhub-azimuth.fullname" . }}
   upstream:
-    serviceName: {{ include "binderhub.proxy-public.fullname" . }}
+    serviceName: {{ include "jupyterhub.proxy-public.fullname" . }}
