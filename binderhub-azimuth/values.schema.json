@@ -1,0 +1,58 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+        "jupyterhub": {
+            "type": "object",
+            "properties": {
+                "singleuser": {
+                    "type": "object",
+                    "properties": {
+                        "cpu": {
+                            "type": "object",
+                            "properties": {
+                                "limit": {
+                                    "type": "integer",
+                                    "title": "Notebook CPUs",
+                                    "description": "The number of CPUs to allocate to each user notebook.",
+                                    "minimum": 1,
+                                    "default": 1
+                                }
+                            },
+                            "required": ["limit"]
+                        },
+                        "memory": {
+                            "type": "object",
+                            "properties": {
+                                "limit": {
+                                    "type": "string",
+                                    "title": "Notebook RAM",
+                                    "description": "The amount of RAM to allocate to each user notebook.",
+                                    "pattern": "^[1-9][0-9]*G$",
+                                    "default": "2G"
+                                }
+                            },
+                            "required": ["limit"]
+                        },
+                        "storage": {
+                            "type": "object",
+                            "properties": {
+                                "capacity": {
+                                    "type": "string",
+                                    "title": "Notebook storage",
+                                    "description": "The amount of storage to allocate to each user notebook.  \nThis is dynamically allocated from the tenancy quota.",
+                                    "pattern": "^[1-9][0-9]*Gi$",
+                                    "default": "10Gi"
+                                }
+                            },
+                            "required": ["capacity"]
+                        }
+                    },
+                    "required": ["cpu", "memory", "storage"]
+                }
+            },
+            "required": ["singleuser"]
+        }
+    },
+    "required": ["jupyterhub"]
+}
