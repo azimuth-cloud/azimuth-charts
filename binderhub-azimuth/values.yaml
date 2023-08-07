@@ -8,8 +8,11 @@ binderhub:
 
     proxy:
       service:
-        # Don't need a load balancer service since everything will be proxied by Zenith instead
+        # Don't use a Loadbalancer for jupyterhub since service will sit behind Zenith
         type: ClusterIP
+      chp:
+        networkPolicy:
+          enabled: false
 
     prePuller:
       hook:
@@ -72,11 +75,7 @@ binderhub:
   # See https://binderhub.readthedocs.io/en/latest/zero-to-binderhub/setup-binderhub.html#use-podman-inside-kubernetes-pink
   imageBuilderType: pink
 
-  # Don't use a Loadbalancer since service will sit behind Zenith
+  # Don't use a Loadbalancer for binderhub since service will sit behind Zenith
   service:
     type: ClusterIP
-
-  # imageCleaner:
-  #   host:
-  #     # We don't run docker on the host so don't try to clean up images there
-  #     enabled: false
+    
