@@ -84,5 +84,5 @@ jupyterhub:
   imageBuilderType: pink
 
   # Image cleaner only works with docker
-  # imageCleaner:
-  #   enabled: false
+  imageCleaner:
+    enabled: false
