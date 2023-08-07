@@ -3,86 +3,79 @@ zenithClient:
   description:
   label: "Binderhub"
 
-jupyterhub:
-  prePuller:
-    hook:
-      enabled: false
-    continuous:
-      enabled: false
-
-  # For the proxy, we only need a ClusterIP service as Zenith will punch it out
-  proxy:
-    service:
-      type: ClusterIP
-    chp:
-      networkPolicy:
+binderhub:
+  jupyterhub:
+    prePuller:
+      hook:
+        enabled: false
+      continuous:
         enabled: false
 
-  hub:
-    networkPolicy:
-      enabled: false
-    extraConfig:
-      # Until https://github.com/jupyterhub/kubespawner/issues/498 is fixed
-      # https://discourse.jupyter.org/t/advanced-z2jh-deeply-customizing-the-spawner/8432
-      customspawner.py: |
-        from kubespawner import KubeSpawner
+    # For the proxy, we only need a ClusterIP service as Zenith will punch it out
+    proxy:
+      service:
+        type: ClusterIP
+      chp:
+        networkPolicy:
+          enabled: false
 
-        class CustomSpawner(KubeSpawner):
-            def _build_common_labels(self, extra_labels):
-                labels = super()._build_common_labels(extra_labels)
-                label_username = "jupyter-" + labels['hub.jupyter.org/username']
-                labels['hub.jupyter.org/username'] = label_username
-                return labels
+    hub:
+      networkPolicy:
+        enabled: false
+      extraConfig:
+        # Until https://github.com/jupyterhub/kubespawner/issues/498 is fixed
+        # https://discourse.jupyter.org/t/advanced-z2jh-deeply-customizing-the-spawner/8432
+        customspawner.py: |
+          from kubespawner import KubeSpawner
 
-        c.JupyterHub.spawner_class = CustomSpawner
+          class CustomSpawner(KubeSpawner):
+              def _build_common_labels(self, extra_labels):
+                  labels = super()._build_common_labels(extra_labels)
+                  label_username = "jupyter-" + labels['hub.jupyter.org/username']
+                  labels['hub.jupyter.org/username'] = label_username
+                  return labels
 
-      # Configure the authentication to respect the X-Remote-User header sent by Zenith from Azimuth
-      remoteuser.py: |
-        from jupyterhub.auth import Authenticator
-        from jupyterhub.handlers import BaseHandler
+          c.JupyterHub.spawner_class = CustomSpawner
 
-        from tornado import web
+        # Configure the authentication to respect the X-Remote-User header sent by Zenith from Azimuth
+        remoteuser.py: |
+          from jupyterhub.auth import Authenticator
+          from jupyterhub.handlers import BaseHandler
 
-        class RemoteUserLoginHandler(BaseHandler):
-            def get(self):
-                remote_user = self.request.headers.get("X-Remote-User")
-                if not remote_user:
-                    raise web.HTTPError(401)
-                user = self.user_from_username(remote_user)
-                self.set_login_cookie(user)
-                next_url = self.get_next_url(user)
-                self.redirect(next_url)
+          from tornado import web
 
-        class RemoteUserAuthenticator(Authenticator):
-            def get_handlers(self, app):
-                return [(r'/login', RemoteUserLoginHandler)]
+          class RemoteUserLoginHandler(BaseHandler):
+              def get(self):
+                  remote_user = self.request.headers.get("X-Remote-User")
+                  if not remote_user:
+                      raise web.HTTPError(401)
+                  user = self.user_from_username(remote_user)
+                  self.set_login_cookie(user)
+                  next_url = self.get_next_url(user)
+                  self.redirect(next_url)
 
-            async def authenticate(self, *args, **kwargs):
-                raise NotImplementedError()
+          class RemoteUserAuthenticator(Authenticator):
+              def get_handlers(self, app):
+                  return [(r'/login', RemoteUserLoginHandler)]
 
-        c.JupyterHub.authenticator_class = RemoteUserAuthenticator
+              async def authenticate(self, *args, **kwargs):
+                  raise NotImplementedError()
 
-  singleuser:
-    networkPolicy:
-      enabled: false
-    defaultUrl: /lab
-    extraEnv:
-      JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
+          c.JupyterHub.authenticator_class = RemoteUserAuthenticator
 
-    # TODO: Remove me
-    # cpu:
-    #   limit: 1
-    # memory:
-    #   limit: 2G
-    # storage:
-    #   capacity: 10Gi
+    singleuser:
+      networkPolicy:
+        enabled: false
+      defaultUrl: /lab
+      extraEnv:
+        JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
 
-  # Use Podman-in-Kubernetes builder since we can't
-  # do docker builds directly on host (default behaviour)
-  # NOTE: This means that we can only ever have a single BinderHub deployment per k8s cluster
+  # Use Podman-in-Kubernetes builder since we can't do docker builds directly on host (default behaviour)
+  # NOTE: I think this means that we can only ever have a single BinderHub deployment per k8s cluster
   # See https://binderhub.readthedocs.io/en/latest/zero-to-binderhub/setup-binderhub.html#use-podman-inside-kubernetes-pink
   imageBuilderType: pink
 
-  # Image cleaner only works with docker
-  imageCleaner:
-    enabled: false
+  # imageCleaner:
+  #   host:
+  #     # We don't run docker on the host so don't try to clean up images there
+  #     enabled: false

@@ -9,7 +9,8 @@ keywords: [jupyter, binderhub]
 
 dependencies:
   - name: binderhub
-    version: 0.2.0-n1011.hb49edf6
+    # version: 0.2.0-n1011.hb49edf6
+    version: 1.0.0-0.dev.git.3170.h84b1db9
     repository: https://jupyterhub.github.io/helm-chart/
 
 annotations:
