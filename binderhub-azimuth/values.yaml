@@ -79,3 +79,6 @@ binderhub:
   service:
     type: ClusterIP
     
+  config:
+    BinderHub:
+      use_registry: false
