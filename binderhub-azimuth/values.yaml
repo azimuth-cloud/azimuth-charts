@@ -12,13 +12,12 @@ binderhub:
         enabled: false
 
     # For the proxy, we only need a ClusterIP service as Zenith will punch it out
-    proxy:
-      service:
-        type: ClusterIP
-      chp:
-        networkPolicy:
-          enabled: false
-
+    # proxy:
+    #   service:
+    #     type: ClusterIP
+    #   chp:
+    #     networkPolicy:
+    #       enabled: false
     hub:
       networkPolicy:
         enabled: false
@@ -74,6 +73,10 @@ binderhub:
   # NOTE: I think this means that we can only ever have a single BinderHub deployment per k8s cluster
   # See https://binderhub.readthedocs.io/en/latest/zero-to-binderhub/setup-binderhub.html#use-podman-inside-kubernetes-pink
   imageBuilderType: pink
+
+  # Don't use a Loadbalancer since service will sit behind Zenith
+  service:
+    type: ClusterIP
 
   # imageCleaner:
   #   host:
