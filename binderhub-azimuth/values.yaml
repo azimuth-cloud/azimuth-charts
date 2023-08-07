@@ -5,11 +5,18 @@ zenithClient:
 
 binderhub:
   jupyterhub:
+
+    proxy:
+      service:
+        # Don't need a load balancer service since everything will be proxied by Zenith instead
+        type: ClusterIP
+
     prePuller:
       hook:
         enabled: false
       continuous:
         enabled: false
+
     hub:
       networkPolicy:
         enabled: false
