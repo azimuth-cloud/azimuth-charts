@@ -3,7 +3,7 @@ zenithClient:
   description:
   label: "Binderhub"
 
-binderhub:
+jupyterhub:
   prePuller:
     hook:
       enabled: false
@@ -69,6 +69,14 @@ binderhub:
     extraEnv:
       JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
 
+    # TODO: Remove me
+    # cpu:
+    #   limit: 1
+    # memory:
+    #   limit: 2G
+    # storage:
+    #   capacity: 10Gi
+
   # Use Podman-in-Kubernetes builder since we can't
   # do docker builds directly on host (default behaviour)
   # NOTE: This means that we can only ever have a single BinderHub deployment per k8s cluster
@@ -76,5 +84,5 @@ binderhub:
   imageBuilderType: pink
 
   # Image cleaner only works with docker
-  imageCleaner:
-    enabled: false
+  # imageCleaner:
+  #   enabled: false
