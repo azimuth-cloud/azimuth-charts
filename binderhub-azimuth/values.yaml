@@ -80,15 +80,15 @@ binderhub:
     type: ClusterIP
 
   # Configure binder to use installed local container registry
-  registry:
-    # This value is also used as the name for the Service resource which exposes the local container registry
-    # TODO: Is there a better way to set this value dynamically (e.g. based on namespace, release name etc.)?
-    url: binderhub-registry
-    username: ""
-    password: ""
+  # registry:
+  #   # This value is also used as the name for the Service resource which exposes the local container registry
+  #   # TODO: Is there a better way to set this value dynamically (e.g. based on namespace, release name etc.)?
+  #   url: binderhub-registry
+  #   username: ""
+  #   password: ""
   config:
     BinderHub:
-      use_registry: true
+      use_registry: false
       # image_prefix: binderhub-registry.svc/
-    DockerRegistry:
-      token_url: None
+    # DockerRegistry:
+    #   token_url: "binderhub-registry/v2/token?service="
