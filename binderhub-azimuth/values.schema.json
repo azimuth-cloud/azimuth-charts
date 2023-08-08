@@ -58,26 +58,26 @@
                 }
             },
             "required": ["jupyterhub"]
-        }
-    },
-    "registry": {
-        "type": "object",
-        "properties": {
-            "storage": {
-                "type": "object",
-                "properties": {
-                    "capacity": {
-                        "type": "string",
-                        "title": "Notebook storage",
-                        "description": "The amount of storage to allocate to each user notebook.  \nThis is dynamically allocated from the tenancy quota.",
-                        "pattern": "^[1-9][0-9]*Gi$",
-                        "default": "10Gi"
-                    }
-                },
-                "required": ["capacity"]
-            }
         },
-        "required": ["storage"]
+        "registry": {
+            "type": "object",
+            "properties": {
+                "storage": {
+                    "type": "object",
+                    "properties": {
+                        "capacity": {
+                            "type": "string",
+                            "title": "Notebook storage",
+                            "description": "The amount of storage to allocate to each user notebook.  \nThis is dynamically allocated from the tenancy quota.",
+                            "pattern": "^[1-9][0-9]*Gi$",
+                            "default": "10Gi"
+                        }
+                    },
+                    "required": ["capacity"]
+                }
+            },
+            "required": ["storage"]
+        }
     },
     "required": ["binderhub", "registry"]
 }
