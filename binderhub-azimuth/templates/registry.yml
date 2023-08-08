@@ -1,0 +1,70 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "binderhub-azimuth.fullname" . | printf "%s-registry"}}
+  labels: {{ include "binderhub-azimuth.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: docker-registry
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: docker-registry # Must match spec.selector field of Service
+    spec:
+      containers:
+      - image: docker.io/registry
+        name: registry
+        # resources: {}
+        volumeMounts:
+        - mountPath: /var/lib/registry
+          name: registry-storage
+        ports:
+          - containerPort: 5000
+            name: registry-http
+      volumes:
+        - name: registry-storage
+          persistentVolumeClaim:
+            claimName: {{ include "binderhub-azimuth.fullname" . | printf "%s-registry"}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "binderhub-azimuth.fullname" . | printf "%s-registry"}}
+  labels: {{ include "binderhub-azimuth.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      # TODO: Convert this to Helm value + UI input
+      storage: {{ .Values.registry.storage.capacity }}
+---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: registry-config
+#   # labels:
+#   # TODO: Add labels from Helm helpers
+# data:
+#   ENV_VAR_1: value-1
+# ---
+apiVersion: v1
+kind: Service
+metadata:
+  # name: {{ include "binderhub-azimuth.fullname" . | printf "%s-registry"}}
+  name: {{ .Values.binderhub.registry.url }}
+  labels: {{ include "binderhub-azimuth.labels" . | nindent 4 }}
+spec:
+  ports:
+  - name: registry
+    protocol: TCP
+    port: 5000
+    targetPort: registry-http
+  selector:
+    app: docker-registry
+  type: ClusterIP

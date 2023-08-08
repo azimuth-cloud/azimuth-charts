@@ -12,3 +12,9 @@ controls:
     minimum: 1
     step: 1
     displayUnits: GB
+  /registry/storage/capacity:
+    type: NumberWithUnitsControl
+    units: Gi
+    minimum: 10
+    step: 1
+    displayUnits: GB
