@@ -67,7 +67,7 @@
                     "properties": {
                         "capacity": {
                             "type": "string",
-                            "title": "Notebook storage",
+                            "title": "Container registry storage",
                             "description": "The amount of storage to allocate to the BinderHub container registry. \nThis is dynamically allocated from the tenancy quota.",
                             "pattern": "^[1-9][0-9]*Gi$",
                             "default": "10Gi"
