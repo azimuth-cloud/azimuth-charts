@@ -73,7 +73,8 @@ binderhub:
   # Use Podman-in-Kubernetes builder since we can't do docker builds directly on host (default behaviour)
   # NOTE: I think this means that we can only ever have a single BinderHub deployment per k8s cluster
   # See https://binderhub.readthedocs.io/en/latest/zero-to-binderhub/setup-binderhub.html#use-podman-inside-kubernetes-pink
-  imageBuilderType: pink
+  # imageBuilderType: pink
+  imageBuilderType: dind
 
   # Don't use a Loadbalancer for binderhub since service will sit behind Zenith
   service:
