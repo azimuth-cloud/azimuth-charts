@@ -70,11 +70,24 @@ binderhub:
       extraEnv:
         JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
 
-  # Use Podman-in-Kubernetes builder since we can't do docker builds directly on host (default behaviour)
-  # NOTE: I think this means that we can only ever have a single BinderHub deployment per k8s cluster
-  # See https://binderhub.readthedocs.io/en/latest/zero-to-binderhub/setup-binderhub.html#use-podman-inside-kubernetes-pink
   # imageBuilderType: pink
+  # pink:
+  #   daemonset:
+  #     extraVolumeMounts:
+  #       - name: binderhub-registry-conf
+  #         mountPath: /etc/containers/registries.conf.d/
+  #     extraVolumes:
+  #       - name: binderhub-registry-conf
+  #         configMap:
+  #           name: pink-binderhub-registry-config
+  
   imageBuilderType: dind
+  dind:
+    daemonset:
+      extraArgs:
+        - --debug
+        - "--insecure-registry"
+        - "binderhub-registry:80"
 
   # Don't use a Loadbalancer for binderhub since service will sit behind Zenith
   service:
@@ -84,12 +97,13 @@ binderhub:
   registry:
     # This value is also used as the name for the Service resource which exposes the local container registry
     # TODO: Is there a better way to set this value dynamically (e.g. based on namespace, release name etc.)?
-    # url: binderhub-registry
-    username: "required-but-not-used"
-    password: "required-but-not-used"
+    url: http://binderhub-registry:80
+    username: "testuser"
+    password: "testpassword"
   config:
     BinderHub:
-      use_registry: false
-      # image_prefix: binderhub-registry.svc/
-    # DockerRegistry:
-    #   token_url: "binderhub-registry/v2/token?service="
+      use_registry: true
+      image_prefix: binderhub-registry:80/test-
+    DockerRegistry:
+      # token_url: None
+      token_url: "binderhub-registry:80/v2/token?service="

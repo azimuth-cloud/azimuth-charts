@@ -18,17 +18,47 @@ spec:
       containers:
       - image: docker.io/registry
         name: registry
-        # resources: {}
         volumeMounts:
         - mountPath: /var/lib/registry
           name: registry-storage
+        # - mountPath: /certs
+        #   name: tls-certs
+        - mountPath: /auth
+          name: registry-creds
         ports:
           - containerPort: 5000
             name: registry-http
+        env:
+        # - name: REGISTRY_AUTH
+        #   value: silly
+        # - name: REGISTRY_AUTH_SILLY_REALM
+        #   value: test1
+        # - name: REGISTRY_AUTH_SILLY_SERVICE
+        #   value: test2
+        - name: REGISTRY_AUTH
+          value: htpasswd
+        - name: REGISTRY_AUTH_HTPASSWD_REALM
+          value: "Registry Realm"
+        - name: REGISTRY_AUTH_HTPASSWD_PATH
+          value: /auth/htpasswd
+
+        - name: REGISTRY_LOG_LEVEL
+          value: debug
+
+        # - name: REGISTRY_HTTP_TLS_CERTIFICATE
+        #   value: /certs/tls.crt
+        # - name: REGISTRY_HTTP_TLS_KEY
+        #   value: /certs/tls.key
       volumes:
         - name: registry-storage
           persistentVolumeClaim:
             claimName: {{ include "binderhub-azimuth.fullname" . | printf "%s-registry"}}
+        # - name: tls-certs
+        #   secret:
+        #     secretName: {{ include "binderhub-azimuth.fullname" . | printf "%s-registry-certs"}}
+        - name: registry-creds
+          secret:
+            secretName: binderhub-registry-creds
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -44,27 +74,48 @@ spec:
       # TODO: Convert this to Helm value + UI input
       storage: {{ .Values.registry.storage.capacity }}
 ---
-# apiVersion: v1
-# kind: ConfigMap
-# metadata:
-#   name: registry-config
-#   # labels:
-#   # TODO: Add labels from Helm helpers
-# data:
-#   ENV_VAR_1: value-1
-# ---
 apiVersion: v1
 kind: Service
 metadata:
-  # name: {{ include "binderhub-azimuth.fullname" . | printf "%s-registry"}}
-  name: {{ .Values.binderhub.registry.url }}
+  # name: {{ .Values.binderhub.registry.url }}
+  name: binderhub-registry
   labels: {{ include "binderhub-azimuth.labels" . | nindent 4 }}
 spec:
   ports:
   - name: registry
     protocol: TCP
-    port: 5000
+    port: 80
     targetPort: registry-http
   selector:
     app: docker-registry
   type: ClusterIP
+# ---
+# apiVersion: v1
+# data:
+#   tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMyakNDQWNLZ0F3SUJBZ0lKQU5TZHZIbnNzaDEwTUEwR0NTcUdTSWIzRFFFQkN3VUFNQmN4RlRBVEJnTlYKQkFNTURFRmpiV1VnVW05dmRDQkRRVEFnRncweU16QTRNRGt3T1RJd05UQmFHQTh5TURVd01USXlOVEE1TWpBMQpNRm93SFRFYk1Ca0dBMVVFQXd3U1ltbHVaR1Z5YUhWaUxYSmxaMmx6ZEhKNU1JSUJJakFOQmdrcWhraUc5dzBCCkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTI3d2dYWlMyQkJxWElPM2ZHQld5QXJxUmhqeWdJclpyOTllVU0xNFEKYkMvTUdpUkppb2xPcytTQnQ4aDREckhOZEltZ3lCbXVCdElXQVIwMUpERm1NcytLb1g1RGRkSFd0OVVSQnZZTQpUOG95MVpDZlpCRUtZNnJJcXNlRXlwY2FYODBCWkpDdGF4SXhSRzU5Ui9sMURPTDBKaU5YdjljOHg4dEh5WHRCCkt5ekFXWGx0dE5iUXVhV3hNSUtKbGpxdE44bnNnWmhMNUJXVC9QaVhpZVdqTWpCcTRMY2s0TkRmaG9lcXhPc0YKWGI2S3ovUUpqSHNLWjcvL0dwMVJsdmgvNHR6dG1WYW5QZ2lqUnBzL2dtMW5uTFFjeVRGSmlWSkhTWkdNZll4dwpBa0NQOWJCdmxCR1luaTBMcHd6L3RneXN6ZHVDS29abmo5dDlNTVlZQW9zeG5RSURBUUFCb3lFd0h6QWRCZ05WCkhSRUVGakFVZ2hKaWFXNWtaWEpvZFdJdGNtVm5hWE4wY25rd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFIUm0KcFhJMWg1bHVMRmdqcXdhemZSeEMxdkFNVnJudUdPeFZOdisvY2hPK0szdVB4ZjhPS2hzbUJSc3RNN1RYbHYvNAo4WnlkL0wrQktyQTVydHFRRmZQZ1d0NzNuaHNwdHFiRnBScGpwdHlDOXAyZldYQXkweVNPS1ZjM0tvR0pIUkVwCmtrQTBPWlROM3JvRDUxeFNjN0VyWERxbjd6SkJIdEIwWHJJT0UrQWswOENadWpYZ3QzekttdEpiUStZejNoblgKUVVQN3ljWk5lcTZSK2I1S3FpdlJDbThUcGhHakYvZHVrbW9oQlJkaHZ0ZjBsZitpdUhUYVdRMjFmL2pyY0tiYQpSUGxIeDdRKy9hTi9NZFRFYjE1cjRmaUQrT05pZEFmS1owS2lQVjdWTmZML21KL2s3ZEoyY1AydndjcVZsSkNrCmc2aDA3dVhaTGtxYkR3SkhOZ3c9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+#   tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2d0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktrd2dnU2xBZ0VBQW9JQkFRRGJ2Q0JkbExZRUdwY2cKN2Q4WUZiSUN1cEdHUEtBaXRtdjMxNVF6WGhCc0w4d2FKRW1LaVU2ejVJRzN5SGdPc2MxMGlhRElHYTRHMGhZQgpIVFVrTVdZeXo0cWhma04xMGRhMzFSRUc5Z3hQeWpMVmtKOWtFUXBqcXNpcXg0VEtseHBmelFGa2tLMXJFakZFCmJuMUgrWFVNNHZRbUkxZS8xenpIeTBmSmUwRXJMTUJaZVcyMDF0QzVwYkV3Z29tV09xMDN5ZXlCbUV2a0ZaUDgKK0plSjVhTXlNR3JndHlUZzBOK0doNnJFNndWZHZvclA5QW1NZXdwbnYvOGFuVkdXK0gvaTNPMlpWcWMrQ0tORwpteitDYldlY3RCekpNVW1KVWtkSmtZeDlqSEFDUUkvMXNHK1VFWmllTFF1bkRQKzJES3pOMjRJcWhtZVAyMzB3CnhoZ0NpekdkQWdNQkFBRUNnZ0VCQUpGSS9nMWgra2NVWGNDRUJ2SWh4aVZQdmxDSFhVb1dXNlR2Z1NuRmxBNDAKUERzOHF2TlNmaHNyaHlsQS8wQ1lCMFI2aXpoQzRuSFlEbnlHRjFEcTZLdkgxZDJaWW5sUVdTd0xVTXJOZks1MAovczkrWkNVQnIyRGUxdmMwSEhUbkc2VWtJenVlL1VyQ0tKa2FoUE5GMlVLLy9MWUt3RVl6eGhoRUxCN253OXNLCjdZNEtKSUdYNjZkM3RaN3E3RTVETFJwWDlWejJlS01KYWtmcnAyUXBUaUNTNjIyN1NkNGVVTFhzNDVaZ05BNWEKa3FJaEFRemJTais5Mzh6V0RIeHlSeXlxbXViN1RQVHkveTJZMW8vS0JPSFI5cFJuajdPSXZPSTZneS9OTWNUVQoxcEZnUGswYWcxQWRBMWxpSU9yWm94QXZiKys3cFJRNGl4NHpRQTZhTW5FQ2dZRUEvTG1LVGJqZUxxRDlWeDhJCjBtQ2ZocWd3S0lLSENKcGVCU3AxbUVzM0pEQ3VSV0tqanNjTkNFUlpXZTV2N0JGcGw2dlp4SFBUMEZSbFE5bEUKL01xOEt6NUV5clh0RE13cnIvR3dPSDZWbVFjNzBFRGxCZGQzNXRrSnd2WnBLUGU5NCtJZVNmc3YrV1JuU1VzYQovLzV0OXo0VVB3ZkFQSVlFQXVqYzZkdHN6ZHNDZ1lFQTNwVWk0dklYT29YbzZCb0czd1YrMGZtTzJYN2VGMWtjCjFhOXVYdTRML2crMGFSODZMYzU1Vm5FYWh2dGU4SGl5UGJmSEthdzYyNnhxTm5vOUg2TEZDb1JsemNJZ1dKVVQKQk1TcjNBYU9vOC9TcWRiV0d6Z2w4cUZQTkg1MmVZZVRtSXN6VnRaWGtIYlBpN3VNczJHNlh0TENSbmtJRWxJWQo1TCtMQ3U1Um8rY0NnWUVBNXZIaW1nM1RNOGM0VzVIbnJPQlJSMnVRdnFReEk4SjFJc0ZmUHZHVkRVUlRMT0xyCjFnQytQd3krbmprUEhDbjVWWG5jZ2ZMYTRDa1BkUVlxVGR3eVFrNGY3U0o4NGxIOXBrWDFwRnJBK0Z1czVDMDUKWExJL1JyeVZlQTFYb2ZGckhNRTRycUNWZ1pDbjlrbGsvZ1NTbHZxcTQ4S0FnSTV6UWZsc1QyU09ORHNDZ1lFQQoyV2dZUEUyMHJLQVJuMnVVbkpBVWtHbk93dGd0ZSthNXlHcGpSdXdDNExSY1JuV084U0VFMlk3K0Z5dytUbW5GCng0elRSdndJUFh0Si8wNGtsOXIzMVU3KzFSd3hWZlMrTCtFZDhIcWpKcFFlczIrNWo3cW5MamVyVXAzWGdOc1IKS21XRXp1UHJnWnJiSENRanlTN0N5RTNhSHRXbk1hWG8xTDNXeE9XRTdxOENnWUFIdlR4cHh5VytnemZDNCtCTAovWE1LTlZ3eG5rSktiQy9QRHFyOVBWcjdpRXFWQzFIS1BMVzF6OGpZN1lpeDRyVDY4SEtDMGVFaFRob0dqd2pvCnN4Wm9CRDdpNmFTc0w4dVZTMVl5YWZzT21Qb1VoWEwvaTVIYTBZMkp5bjFxMkNONjlaN2lsd1VxK0g2WWpZazUKUXBnQXZCUC9NVm1mNXlmU3VrMmNROHdGN1E9PQotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tCg==
+# kind: Secret
+# metadata:
+#   creationTimestamp: null
+#   name: {{ include "binderhub-azimuth.fullname" . | printf "%s-registry-certs"}}
+# type: kubernetes.io/tls
+# ---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: pink-binderhub-registry-config
+#   # labels:
+#   # TODO: Add labels from Helm helpers
+# data:
+#   binderhub-registry.conf: |
+#     [[registry]]
+#     prefix = "binderhub-registry"
+#     insecure = false
+#     location = "binderhub-registry"
+---
+apiVersion: v1
+data:
+  htpasswd: dGVzdHVzZXI6JDJ5JDA1JFdqUVo2ZG1BeU0uNXIwbFk2eDdXTGV2Tk1JazQ1b1laMkpVTUloaW1VVEdSaU1nVXRGeU55
+kind: Secret
+metadata:
+  name: binderhub-registry-creds
