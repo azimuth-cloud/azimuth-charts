@@ -36,7 +36,7 @@ chart_yml = f"""---
 apiVersion: v1
 name: kubeflow-azimuth
 version: 0.0.2
-icon: https://www.kubeflow.org/images/logo.svg
+icon: https://raw.githubusercontent.com/stackhpc/azimuth-charts/main/kubeflow-azimuth/logo.svg
 description: A KubeFlow machine learning environment
 dependencies:
   - name: kubeflow-crds
