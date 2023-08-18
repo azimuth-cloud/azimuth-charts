@@ -5,8 +5,8 @@ zenithClient:
 
 binderhub:
   jupyterhub:
-    debug: 
-      enabled: true
+    # debug: 
+    #   enabled: true
 
     proxy:
       service:
@@ -25,46 +25,46 @@ binderhub:
     hub:
       networkPolicy:
         enabled: false
-      # extraConfig:
-      #   # Until https://github.com/jupyterhub/kubespawner/issues/498 is fixed
-      #   # https://discourse.jupyter.org/t/advanced-z2jh-deeply-customizing-the-spawner/8432
-      #   customspawner.py: |
-      #     from kubespawner import KubeSpawner
+      extraConfig:
+        # Until https://github.com/jupyterhub/kubespawner/issues/498 is fixed
+        # https://discourse.jupyter.org/t/advanced-z2jh-deeply-customizing-the-spawner/8432
+        customspawner.py: |
+          from kubespawner import KubeSpawner
 
-      #     class CustomSpawner(KubeSpawner):
-      #         def _build_common_labels(self, extra_labels):
-      #             labels = super()._build_common_labels(extra_labels)
-      #             label_username = "jupyter-" + labels['hub.jupyter.org/username']
-      #             labels['hub.jupyter.org/username'] = label_username
-      #             return labels
+          class CustomSpawner(KubeSpawner):
+              def _build_common_labels(self, extra_labels):
+                  labels = super()._build_common_labels(extra_labels)
+                  label_username = "jupyter-" + labels['hub.jupyter.org/username']
+                  labels['hub.jupyter.org/username'] = label_username
+                  return labels
 
-      #     c.JupyterHub.spawner_class = CustomSpawner
+          c.JupyterHub.spawner_class = CustomSpawner
 
-      #   # Configure the authentication to respect the X-Remote-User header sent by Zenith from Azimuth
-      #   remoteuser.py: |
-      #     from jupyterhub.auth import Authenticator
-      #     from jupyterhub.handlers import BaseHandler
+        # Configure the authentication to respect the X-Remote-User header sent by Zenith from Azimuth
+        remoteuser.py: |
+          from jupyterhub.auth import Authenticator
+          from jupyterhub.handlers import BaseHandler
 
-      #     from tornado import web
+          from tornado import web
 
-      #     class RemoteUserLoginHandler(BaseHandler):
-      #         def get(self):
-      #             remote_user = self.request.headers.get("X-Remote-User")
-      #             if not remote_user:
-      #                 raise web.HTTPError(401)
-      #             user = self.user_from_username(remote_user)
-      #             self.set_login_cookie(user)
-      #             next_url = self.get_next_url(user)
-      #             self.redirect(next_url)
+          class RemoteUserLoginHandler(BaseHandler):
+              def get(self):
+                  remote_user = self.request.headers.get("X-Remote-User")
+                  if not remote_user:
+                      raise web.HTTPError(401)
+                  user = self.user_from_username(remote_user)
+                  self.set_login_cookie(user)
+                  next_url = self.get_next_url(user)
+                  self.redirect(next_url)
 
-      #     class RemoteUserAuthenticator(Authenticator):
-      #         def get_handlers(self, app):
-      #             return [(r'/login', RemoteUserLoginHandler)]
+          class RemoteUserAuthenticator(Authenticator):
+              def get_handlers(self, app):
+                  return [(r'/login', RemoteUserLoginHandler)]
 
-      #         async def authenticate(self, *args, **kwargs):
-      #             raise NotImplementedError()
+              async def authenticate(self, *args, **kwargs):
+                  raise NotImplementedError()
 
-      #     c.JupyterHub.authenticator_class = RemoteUserAuthenticator
+          c.JupyterHub.authenticator_class = RemoteUserAuthenticator
 
     singleuser:
       networkPolicy:
@@ -72,17 +72,6 @@ binderhub:
       defaultUrl: /lab
       extraEnv:
         JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
-
-  # imageBuilderType: pink
-  # pink:
-  #   daemonset:
-  #     extraVolumeMounts:
-  #       - name: binderhub-registry-conf
-  #         mountPath: /etc/containers/registries.conf.d/
-  #     extraVolumes:
-  #       - name: binderhub-registry-conf
-  #         configMap:
-  #           name: pink-binderhub-registry-config
   
   imageBuilderType: dind
   dind:
@@ -105,7 +94,7 @@ binderhub:
     password: "testpassword"
   config:
     BinderHub:
-      hub_url: http://hub:8081/
+      hub_url_local: http://hub:8081/
       use_registry: true
       image_prefix: binderhub-registry:80/test-
     # DockerRegistry:
