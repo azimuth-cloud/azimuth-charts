@@ -31,7 +31,7 @@ binderhub:
         customspawner.py: |
           from kubespawner import KubeSpawner
 
-          class CustomSpawner(KubeSpawner):
+          class CustomSpawner(KubeSpawner, BinderSpawnerMixin):
               def _build_common_labels(self, extra_labels):
                   labels = super()._build_common_labels(extra_labels)
                   label_username = "jupyter-" + labels['hub.jupyter.org/username']
