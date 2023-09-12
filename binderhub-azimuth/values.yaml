@@ -21,9 +21,10 @@ binderhub:
       networkPolicy:
         enabled: false
       extraConfig:
-        0-binderspawnermixin: |
-          """
-          Helpers for creating BinderSpawners
+        # Until https://github.com/jupyterhub/kubespawner/issues/498 is fixed
+        # https://discourse.jupyter.org/t/advanced-z2jh-deeply-customizing-the-spawner/8432
+        customspawner.py: |
+          from kubespawner import KubeSpawner
 
           class LocalRegistryMixin:
               def start(self):
@@ -37,7 +38,7 @@ binderhub:
                   label_username = "jupyter-" + labels['hub.jupyter.org/username']
                   labels['hub.jupyter.org/username'] = label_username
                   return labels
-
+          
           c.KubeSpawner.image_pull_secrets = ["binderhub-registry-image-pull"]
 
           c.JupyterHub.spawner_class = CustomSpawner
