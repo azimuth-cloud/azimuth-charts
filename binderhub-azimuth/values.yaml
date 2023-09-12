@@ -113,7 +113,7 @@ binderhub:
       api = client.CustomObjectsApi()
       current_namespace = open("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read()
       reservations = api.list_namespaced_custom_object('zenith.stackhpc.com', 'v1alpha1', current_namespace, 'reservations')['items']      
-      hub_zenith_reservation = list(filter(lambda x: 'jupyterhub' in x['metadata']['name'], reservations))
+      hub_zenith_reservation = list(filter(lambda x: '-binderhub-azimuth-jupyterhub' in x['metadata']['name'], reservations))
       if len(hub_zenith_reservation) > 0:
         # Do some logging here?
         pass
