@@ -25,27 +25,12 @@ binderhub:
           """
           Helpers for creating BinderSpawners
 
-          # class LocalRegistryMixin(Configurable):
-
-          #   def start(self):
-          #       if not self.auth_enabled:
-          #           if "token" not in self.user_options:
-          #               raise web.HTTPError(400, "token required")
-          #           if "image" not in self.user_options:
-          #               raise web.HTTPError(400, "image required")
-          #       if "image" in self.user_options:
-          #           self.image = self.user_options["image"].replace('binderhub-registry:80', 'localhost:31782')
-          #           # self.image = self.image.replace('binderhub-registry:80', 'localhost:31782')
-          #       return super().start()
-
-          # class CustomSpawner(LocalRegistryMixin, BinderSpawnerMixin, KubeSpawner):
-          
-          class CustomSpawner(BinderSpawnerMixin, KubeSpawner):
-
+          class LocalRegistryMixin:
               def start(self):
-                self.image = 'test:1234'
-                print(self.image)
-                return super.start()
+                  self.image = self.image.replace('binderhub-registry:80', 'localhost:31782')
+                  return super().start()
+
+          class CustomSpawner(BinderSpawnerMixin, LocalRegistryMixin, KubeSpawner):
 
               def _build_common_labels(self, extra_labels):
                   labels = super()._build_common_labels(extra_labels)
@@ -53,9 +38,11 @@ binderhub:
                   labels['hub.jupyter.org/username'] = label_username
                   return labels
 
+          c.KubeSpawner.image_pull_secrets = ["binderhub-registry-image-pull"]
+
           c.JupyterHub.spawner_class = CustomSpawner
 
-        # Configure the authentication to respect the X-Remote-User header sent by Zenith from Azimuth
+        # # Configure the authentication to respect the X-Remote-User header sent by Zenith from Azimuth
         # remoteuser.py: |
         #   from jupyterhub.auth import Authenticator
         #   from jupyterhub.handlers import BaseHandler
