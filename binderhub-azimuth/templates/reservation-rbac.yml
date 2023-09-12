@@ -1,0 +1,28 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  annotations:
+    meta.helm.sh/release-name: binderhub
+    meta.helm.sh/release-namespace: default
+  creationTimestamp: "2023-09-08T16:02:53Z"
+  name: binderhub-zenith
+rules:
+- apiGroups:
+  - "zenith.stackhpc.com"
+  resources:
+  - reservations
+  verbs:
+  - get
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: binderhub-zentih
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: binderhub-zenith
+subjects:
+- kind: ServiceAccount
+  name: binderhub

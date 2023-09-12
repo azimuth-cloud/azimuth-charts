@@ -5,9 +5,6 @@ zenithClient:
 
 binderhub:
   jupyterhub:
-    # debug: 
-    #   enabled: true
-
     proxy:
       service:
         # Don't use a Loadbalancer for jupyterhub since service will sit behind Zenith
@@ -15,13 +12,11 @@ binderhub:
       chp:
         networkPolicy:
           enabled: false
-
     prePuller:
       hook:
         enabled: false
       continuous:
         enabled: false
-
     hub:
       networkPolicy:
         enabled: false
@@ -31,40 +26,53 @@ binderhub:
         customspawner.py: |
           from kubespawner import KubeSpawner
 
-          class CustomSpawner(KubeSpawner, BinderSpawnerMixin):
+          class CustomSpawner(BinderSpawnerMixin, KubeSpawner):
               def _build_common_labels(self, extra_labels):
                   labels = super()._build_common_labels(extra_labels)
                   label_username = "jupyter-" + labels['hub.jupyter.org/username']
                   labels['hub.jupyter.org/username'] = label_username
                   return labels
 
+              # Copy of BinderHub mixin def except that we replace container registry with localhost to use NodePort
+              def start(self):
+                  if not self.auth_enabled:
+                      if "token" not in self.user_options:
+                          raise web.HTTPError(400, "token required")
+                      if "image" not in self.user_options:
+                          raise web.HTTPError(400, "image required")
+                  if "image" in self.user_options:
+                      # self.image = self.user_options["image"]
+                      self.image = self.user_options["image"].replace('binderhub-registry:80', 'localhost:31782') # TODO: What if port is already in use?
+                      self.image_pull_secrets = ["binderhub-registry-image-pull"]
+                  return super().start()
+
           c.JupyterHub.spawner_class = CustomSpawner
 
         # Configure the authentication to respect the X-Remote-User header sent by Zenith from Azimuth
-        remoteuser.py: |
-          from jupyterhub.auth import Authenticator
-          from jupyterhub.handlers import BaseHandler
+        # remoteuser.py: |
+        #   from jupyterhub.auth import Authenticator
+        #   from jupyterhub.handlers import BaseHandler
 
-          from tornado import web
+        #   from tornado import web
 
-          class RemoteUserLoginHandler(BaseHandler):
-              def get(self):
-                  remote_user = self.request.headers.get("X-Remote-User")
-                  if not remote_user:
-                      raise web.HTTPError(401)
-                  user = self.user_from_username(remote_user)
-                  self.set_login_cookie(user)
-                  next_url = self.get_next_url(user)
-                  self.redirect(next_url)
+        #   class RemoteUserLoginHandler(BaseHandler):
+        #       def get(self):
+        #           remote_user = self.request.headers.get("X-Remote-User")
+        #           if not remote_user:
+        #               raise web.HTTPError(401)
+        #           user = self.user_from_username(remote_user)
+        #           self.set_login_cookie(user)
+        #           next_url = self.get_next_url(user)
+        #           self.redirect(next_url)
 
-          class RemoteUserAuthenticator(Authenticator):
-              def get_handlers(self, app):
-                  return [(r'/login', RemoteUserLoginHandler)]
+        #   class RemoteUserAuthenticator(Authenticator):
+        #       def get_handlers(self, app):
+        #           return [(r'/login', RemoteUserLoginHandler)]
 
-              async def authenticate(self, *args, **kwargs):
-                  raise NotImplementedError()
+        #       async def authenticate(self, *args, **kwargs):
+        #           raise NotImplementedError()
 
-          c.JupyterHub.authenticator_class = RemoteUserAuthenticator
+        #   c.JupyterHub.authenticator_class = RemoteUserAuthenticator
 
     singleuser:
       networkPolicy:
@@ -92,11 +100,27 @@ binderhub:
     url: http://binderhub-registry:80
     username: "testuser"
     password: "testpassword"
+  
   config:
     BinderHub:
+      # Local url should be set explicitly here since (external) hub_url is overwritten dynamically in extraConfig
       hub_url_local: http://hub:8081/
       use_registry: true
-      image_prefix: binderhub-registry:80/test-
-    # DockerRegistry:
-      # token_url: None
-      # token_url: "binderhub-registry:80/v2/token?service="
+      image_prefix: binderhub-registry:80/
+    DockerRegistry:
+      token_url: None
+  
+  extraConfig:
+    customlauncher.py: |
+      from kubernetes import client, config
+
+      config.load_incluster_config()
+      api = client.CustomObjectsApi()
+      current_namespace = open("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read()
+      reservations = api.list_namespaced_custom_object('zenith.stackhpc.com', 'v1alpha1', current_namespace, 'reservations')['items']      
+      hub_zenith_reservation = list(filter(lambda x: 'jupyterhub' in x['metadata']['name'], reservations))
+      if len(hub_zenith_reservation) > 0:
+        # Do some logging here?
+        pass
+      zenith_url = hub_zenith_reservation[0]['status']['fqdn']
+      c.BinderHub.hub_url = f'http://{zenith_url}'
