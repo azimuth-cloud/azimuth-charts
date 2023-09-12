@@ -143,11 +143,14 @@ binderhub:
           from kubespawner import KubeSpawner
 
           class CustomSpawner(BinderSpawnerMixin, KubeSpawner):
+
               def _build_common_labels(self, extra_labels):
                   labels = super()._build_common_labels(extra_labels)
                   label_username = "jupyter-" + labels['hub.jupyter.org/username']
                   labels['hub.jupyter.org/username'] = label_username
                   return labels
+          
+          c.KubeSpawner.image_pull_secrets = ["binderhub-registry-image-pull"]
 
           c.JupyterHub.spawner_class = CustomSpawner
 
