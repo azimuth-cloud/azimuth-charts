@@ -42,31 +42,31 @@ binderhub:
 
           c.JupyterHub.spawner_class = CustomSpawner
 
-        # # Configure the authentication to respect the X-Remote-User header sent by Zenith from Azimuth
-        # remoteuser.py: |
-        #   from jupyterhub.auth import Authenticator
-        #   from jupyterhub.handlers import BaseHandler
+        # Configure the authentication to respect the X-Remote-User header sent by Zenith from Azimuth
+        remoteuser.py: |
+          from jupyterhub.auth import Authenticator
+          from jupyterhub.handlers import BaseHandler
 
-        #   from tornado import web
+          from tornado import web
 
-        #   class RemoteUserLoginHandler(BaseHandler):
-        #       def get(self):
-        #           remote_user = self.request.headers.get("X-Remote-User")
-        #           if not remote_user:
-        #               raise web.HTTPError(401)
-        #           user = self.user_from_username(remote_user)
-        #           self.set_login_cookie(user)
-        #           next_url = self.get_next_url(user)
-        #           self.redirect(next_url)
+          class RemoteUserLoginHandler(BaseHandler):
+              def get(self):
+                  remote_user = self.request.headers.get("X-Remote-User")
+                  if not remote_user:
+                      raise web.HTTPError(401)
+                  user = self.user_from_username(remote_user)
+                  self.set_login_cookie(user)
+                  next_url = self.get_next_url(user)
+                  self.redirect(next_url)
 
-        #   class RemoteUserAuthenticator(Authenticator):
-        #       def get_handlers(self, app):
-        #           return [(r'/login', RemoteUserLoginHandler)]
+          class RemoteUserAuthenticator(Authenticator):
+              def get_handlers(self, app):
+                  return [(r'/login', RemoteUserLoginHandler)]
 
-        #       async def authenticate(self, *args, **kwargs):
-        #           raise NotImplementedError()
+              async def authenticate(self, *args, **kwargs):
+                  raise NotImplementedError()
 
-        #   c.JupyterHub.authenticator_class = RemoteUserAuthenticator
+          c.JupyterHub.authenticator_class = RemoteUserAuthenticator
 
     singleuser:
       networkPolicy:
