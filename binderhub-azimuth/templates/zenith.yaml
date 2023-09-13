@@ -39,11 +39,6 @@ metadata:
   name: {{ include "binderhub-azimuth.fullname" . | printf "%s-jupyterhub" }}
   labels: {{ include "binderhub-azimuth.labels" . | nindent 4 }}
   annotations:
-    # If we don't include these does that remove the UI element for the service?
-    # azimuth.stackhpc.com/service-label: {{ quote .Values.zenithClient.label }}
-    # azimuth.stackhpc.com/service-icon-url: {{ .Values.zenithClient.iconUrl }}
-    # {{- with .Values.zenithClient.description }}
-    # azimuth.stackhpc.com/service-description: {{ quote . }}
-    # {{- end }}
+    azimuth.stackhpc.com/service-label: "Placeholder"
 spec:
   credentialSecretName: {{ include "binderhub-azimuth.fullname" . | printf "%s-jupyterhub" }}-credential

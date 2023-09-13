@@ -21,41 +21,22 @@ spec:
         volumeMounts:
         - mountPath: /var/lib/registry
           name: registry-storage
-        # - mountPath: /certs
-        #   name: tls-certs
         - mountPath: /auth
           name: registry-creds
         ports:
           - containerPort: 5000
             name: registry-http
         env:
-        # - name: REGISTRY_AUTH
-        #   value: silly
-        # - name: REGISTRY_AUTH_SILLY_REALM
-        #   value: test1
-        # - name: REGISTRY_AUTH_SILLY_SERVICE
-        #   value: test2
         - name: REGISTRY_AUTH
           value: htpasswd
         - name: REGISTRY_AUTH_HTPASSWD_REALM
           value: "Registry Realm"
         - name: REGISTRY_AUTH_HTPASSWD_PATH
           value: /auth/htpasswd
-
-        - name: REGISTRY_LOG_LEVEL
-          value: debug
-
-        # - name: REGISTRY_HTTP_TLS_CERTIFICATE
-        #   value: /certs/tls.crt
-        # - name: REGISTRY_HTTP_TLS_KEY
-        #   value: /certs/tls.key
       volumes:
         - name: registry-storage
           persistentVolumeClaim:
             claimName: {{ include "binderhub-azimuth.fullname" . | printf "%s-registry"}}
-        # - name: tls-certs
-        #   secret:
-        #     secretName: {{ include "binderhub-azimuth.fullname" . | printf "%s-registry-certs"}}
         - name: registry-creds
           secret:
             secretName: binderhub-registry-creds
@@ -71,14 +52,13 @@ spec:
   volumeMode: Filesystem
   resources:
     requests:
-      # TODO: Convert this to Helm value + UI input
       storage: {{ .Values.registry.storage.capacity }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  # name: {{ .Values.binderhub.registry.url }}
   name: binderhub-registry
+  # name: {{ (urlParse .Values.binderhub.registry.url).host |  }}
   labels: {{ include "binderhub-azimuth.labels" . | nindent 4 }}
 spec:
   ports:
@@ -92,9 +72,10 @@ spec:
   selector:
     app: docker-registry
 ---
+{{- with .Values.binderhub.registry }}
 apiVersion: v1
 data:
-  htpasswd: dGVzdHVzZXI6JDJ5JDA1JFdqUVo2ZG1BeU0uNXIwbFk2eDdXTGV2Tk1JazQ1b1laMkpVTUloaW1VVEdSaU1nVXRGeU55
+  htpasswd: {{ htpasswd .username .password | b64enc }}
 kind: Secret
 metadata:
   name: binderhub-registry-creds
@@ -105,5 +86,5 @@ metadata:
   name: binderhub-registry-image-pull
 type: kubernetes.io/dockerconfigjson
 data:
-  # TODO: Make this depend on the chart values using something like this: https://helm.sh/docs/howto/charts_tips_and_tricks/#creating-image-pull-secrets
-  .dockerconfigjson: {{"{\"auths\":{\"localhost:31782\":{\"auth\":\"dGVzdHVzZXI6dGVzdHBhc3N3b3Jk\"}}}" | b64enc }}
+  .dockerconfigjson: {{ printf "{\"auths\":{\"localhost:31782\":{\"auth\":\"%s\"}}}" (printf "%s:%s" .username .password | b64enc) | b64enc }}
+{{- end }}
