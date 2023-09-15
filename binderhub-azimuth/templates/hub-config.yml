@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+# Note: Name must match .Values.binderhub.jupyterhub.hub.extraVolumes entry
+  name: hub-extra-config
+data:
+    local-registry-mixin.py: |
+        from kubespawner import KubeSpawner
+        # Since image pulls happen at host level, internal cluster services are not
+        # resolvable so spawner should use NodePort address for registry
+        class LocalRegistryMixin:
+            def start(self):
+                self.image = self.image.replace('binderhub-registry:80', 'localhost:{{ .Values.binderhub.registry.nodePort }}')
+                return super().start()
