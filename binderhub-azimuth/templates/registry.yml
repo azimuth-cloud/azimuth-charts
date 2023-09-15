@@ -66,13 +66,12 @@ spec:
     protocol: TCP
     port: 80
     targetPort: registry-http
-    nodePort: 31782
+    nodePort: {{ .Values.registry.nodePort }}
   type: NodePort
-  # type: ClusterIP
   selector:
     app: docker-registry
 ---
-{{- with .Values.binderhub.registry }}
+{{- with .Values.registry }}
 apiVersion: v1
 data:
   htpasswd: {{ htpasswd .username .password | b64enc }}
@@ -86,5 +85,5 @@ metadata:
   name: binderhub-registry-image-pull
 type: kubernetes.io/dockerconfigjson
 data:
-  .dockerconfigjson: {{ printf "{\"auths\":{\"localhost:31782\":{\"auth\":\"%s\"}}}" (printf "%s:%s" .username .password | b64enc) | b64enc }}
+  .dockerconfigjson: {{ printf "{\"auths\":{\"localhost:%d\":{\"auth\":\"%s\"}}}" (int .nodeport) (printf "%s:%s" .username .password | b64enc) | b64enc }}
 {{- end }}

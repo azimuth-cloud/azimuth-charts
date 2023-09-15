@@ -3,11 +3,23 @@ zenithClient:
   description:
   label: "Binderhub"
 
+# Use yaml anchors to avoid repetition
+registry:
+  # This url domain name should match the Service 
+  # resource which exposes the local container registry
+  url: &registry-url http://binderhub-registry:80
+  username: &registry-username testuser
+  password: &registry-password testpassword"
+  nodeport: 31783
+  storage:
+    capacity: # Set in Azimuth UI
+
 binderhub:
   jupyterhub:
     proxy:
       service:
-        # Don't use a Loadbalancer for jupyterhub since service will sit behind Zenith
+        # Don't use a Loadbalancer for jupyterhub since 
+        # service will sit behind Zenith
         type: ClusterIP
       chp:
         networkPolicy:
@@ -20,16 +32,20 @@ binderhub:
     hub:
       networkPolicy:
         enabled: false
+      # Use mounted ConfigMap instead of extraConfig directly to allow
+      # Helm templating into python snippets
+      extraVolumes:
+      - name: hub-extra-config
+        configMap:
+          # Note: Name must match ConfigMap in templates/hub-config.yml
+          name: hub-extra-config
+      extraVolumeMounts:
+      - name: hub-extra-config
+        mountPath: /usr/local/etc/jupyterhub/jupyterhub_config.d/
+
       extraConfig:
         customspawner.py: |
           from kubespawner import KubeSpawner
-
-          # Since image pulls happen at host level, internal cluster services are not
-          # resolvable so spawner should use NodePort address for registry
-          class LocalRegistryMixin:
-              def start(self):
-                  self.image = self.image.replace('binderhub-registry:80', 'localhost:31782')
-                  return super().start()
 
           # Until https://github.com/jupyterhub/kubespawner/issues/498 is fixed
           # https://discourse.jupyter.org/t/advanced-z2jh-deeply-customizing-the-spawner/8432
@@ -90,33 +106,37 @@ binderhub:
 
   # Configure binder to use installed local container registry
   registry:
-    # This value is also used as the name for the Service 
-    # resource which exposes the local container registry
-    url: http://binderhub-registry:80
-    username: "testuser"
-    password: "testpassword"
+    url: *registry-url
+    username: *registry-username
+    password: *registry-password
   
   config:
     BinderHub:
+      auth_enabled: true
       # Local url should be set explicitly here since (external) 
       # hub_url is overwritten dynamically in extraConfig
       hub_url_local: http://hub:8081/
       use_registry: true
-      image_prefix: binderhub-registry:80/
+      image_prefix: binderhub-registry:80/azimuth/
     DockerRegistry:
       token_url: None
   
   extraConfig:
-    customlauncher.py: |
+    zenith-hub-url.py: |
+      # Looks up Zenith FQDN for hub instance on cluster and passes to BinderHub
+      # so that we get redirected to correct Zenith url when notebook is ready 
       from kubernetes import client, config
-
       config.load_incluster_config()
       api = client.CustomObjectsApi()
       current_namespace = open("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read()
-      reservations = api.list_namespaced_custom_object('zenith.stackhpc.com', 'v1alpha1', current_namespace, 'reservations')['items']      
-      hub_zenith_reservation = list(filter(lambda x: '-binderhub-azimuth-jupyterhub' in x['metadata']['name'], reservations))
+      reservations = api.list_namespaced_custom_object(
+        'zenith.stackhpc.com', 'v1alpha1', current_namespace, 'reservations'
+      )['items']      
+      hub_zenith_reservation = list(filter(
+        lambda x: '-binderhub-azimuth-jupyterhub' in x['metadata']['name'], reservations
+      ))
       if len(hub_zenith_reservation) > 0:
-        # Do some logging here?
+        # Do some error logging here?
         pass
       zenith_url = hub_zenith_reservation[0]['status']['fqdn']
       c.BinderHub.hub_url = f'http://{zenith_url}'
