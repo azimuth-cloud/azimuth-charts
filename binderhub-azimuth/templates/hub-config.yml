@@ -11,5 +11,5 @@ data:
         # resolvable so spawner should use NodePort address for registry
         class LocalRegistryMixin:
             def start(self):
-                self.image = self.image.replace('binderhub-registry:80', 'localhost:{{ .Values.binderhub.registry.nodePort }}')
+                self.image = self.image.replace('binderhub-registry:80', 'localhost:{{ .Values.registry.nodeport }}')
                 return super().start()
