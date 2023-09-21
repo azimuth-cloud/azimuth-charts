@@ -30,6 +30,11 @@ binderhub:
       continuous:
         enabled: false
     hub:
+      config:
+        # JupyterHub:
+        #   authenticator_class: nullauthenticator.NullAuthenticator
+        BinderSpawner:
+          auth_enabled: true
       networkPolicy:
         enabled: false
       # Use mounted ConfigMap instead of extraConfig directly to allow
@@ -92,6 +97,24 @@ binderhub:
       defaultUrl: /lab
       extraEnv:
         JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
+      # TODO: Below is default jupyterhub (but not binderhub) config to
+      # enable PVCs for storage, we should do something similar here since
+      # binderhub defaults to no persistent storage
+      # storage:
+      #   type: dynamic
+      #   extraLabels: {}
+      #   extraVolumes: []
+      #   extraVolumeMounts: []
+      #   static:
+      #     pvcName:
+      #     subPath: "{username}"
+      #   capacity: 10Gi
+      #   homeMountPath: /home/jovyan
+      #   dynamic:
+      #     storageClass:
+      #     pvcNameTemplate: claim-{username}{servername}
+      #     volumeNameTemplate: volume-{username}{servername}
+      #     storageAccessModes: [ReadWriteOnce]
   
   imageBuilderType: dind
   dind:
