@@ -9,7 +9,7 @@ registry:
   # resource which exposes the local container registry
   url: &registry-url http://binderhub-registry:80
   username: &registry-username testuser
-  password: &registry-password testpassword"
+  password: &registry-password testpassword
   nodeport: 31783
   storage:
     capacity: # Set in Azimuth UI
