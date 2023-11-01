@@ -2,6 +2,8 @@ zenithClient:
   iconUrl: https://raw.githubusercontent.com/jupyterhub/binderhub/main/binderhub/static/images/logo_square.png
   description:
   label: "Binderhub"
+  auth:
+    skip: false
 
 # Use yaml anchors to avoid repetition
 registry:
@@ -32,7 +34,7 @@ binderhub:
     hub:
       config:
         # JupyterHub:
-        #   authenticator_class: nullauthenticator.NullAuthenticator
+        #   authenticator_class: RemoteUserAuthenticator
         BinderSpawner:
           auth_enabled: true
       networkPolicy:
@@ -61,7 +63,7 @@ binderhub:
                   label_username = "jupyter-" + labels['hub.jupyter.org/username']
                   labels['hub.jupyter.org/username'] = label_username
                   return labels
-        
+
           c.KubeSpawner.image_pull_secrets = ["binderhub-registry-image-pull"]
           c.JupyterHub.spawner_class = CustomSpawner
 
@@ -136,7 +138,8 @@ binderhub:
   config:
     BinderHub:
       # Auth is handled by Zenith
-      auth_enabled: false
+      # auth_enabled: false
+      auth_enabled: true
       # Local url should be set explicitly here since (external) 
       # hub_url is overwritten dynamically in extraConfig
       hub_url_local: http://hub:8081/

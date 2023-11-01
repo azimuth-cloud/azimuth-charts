@@ -6,6 +6,8 @@ metadata:
   labels: {{ include "binderhub-azimuth.labels" . | nindent 4 }}
 spec:
   reservationName: {{ include "binderhub-azimuth.fullname" . }}
+  auth:
+    skip: {{ .Values.zenithClient.auth.skip }}
   upstream:
     serviceName: binder
 ---
@@ -30,6 +32,8 @@ metadata:
   labels: {{ include "binderhub-azimuth.labels" . | nindent 4 }}
 spec:
   reservationName: {{ include "binderhub-azimuth.fullname" . | printf "%s-jupyterhub" }}
+  auth:
+    skip: {{ .Values.zenithClient.auth.skip }}
   upstream:
     serviceName: proxy-public
 ---
