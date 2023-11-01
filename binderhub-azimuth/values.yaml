@@ -17,10 +17,7 @@ registry:
     capacity: # Set in Azimuth UI
 
 binderhub:
-  cors: "*"
   jupyterhub:
-    custom:
-      cors: "*"
     proxy:
       service:
         # Don't use a Loadbalancer for jupyterhub since 
@@ -38,8 +35,8 @@ binderhub:
       config:
         # JupyterHub:
         #   authenticator_class: RemoteUserAuthenticator
-        BinderSpawner:
-          auth_enabled: true
+        # BinderSpawner:
+          # auth_enabled: true
       networkPolicy:
         enabled: false
       # Use mounted ConfigMap instead of extraConfig directly to allow
@@ -59,19 +56,7 @@ binderhub:
 
           # Until https://github.com/jupyterhub/kubespawner/issues/498 is fixed
           # https://discourse.jupyter.org/t/advanced-z2jh-deeply-customizing-the-spawner/8432
-          # class CustomSpawner(BinderSpawnerMixin, LocalRegistryMixin, KubeSpawner):
-          # class CustomSpawner(BinderSpawnerMixin, KubeSpawner):
-          class CustomSpawner(KubeSpawner):
-
-              def start(self):
-                # if not self.auth_enabled:
-                #     if "token" not in self.user_options:
-                #         raise web.HTTPError(400, "token required")
-                #     if "image" not in self.user_options:
-                #         raise web.HTTPError(400, "image required")
-                if "image" in self.user_options:
-                    self.image = self.user_options["image"]
-                return super().start()
+          class CustomSpawner(BinderSpawnerMixin, LocalRegistryMixin, KubeSpawner):
 
               def _build_common_labels(self, extra_labels):
                   labels = super()._build_common_labels(extra_labels)
@@ -153,8 +138,7 @@ binderhub:
   config:
     BinderHub:
       # Auth is handled by Zenith
-      # auth_enabled: false
-      auth_enabled: true
+      auth_enabled: false
       # Local url should be set explicitly here since (external) 
       # hub_url is overwritten dynamically in extraConfig
       hub_url_local: http://hub:8081/
