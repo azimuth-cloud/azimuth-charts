@@ -17,7 +17,10 @@ registry:
     capacity: # Set in Azimuth UI
 
 binderhub:
+  cors: "*"
   jupyterhub:
+    custom:
+      cors: "*"
     proxy:
       service:
         # Don't use a Loadbalancer for jupyterhub since 
