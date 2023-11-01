@@ -60,8 +60,8 @@ binderhub:
           # Until https://github.com/jupyterhub/kubespawner/issues/498 is fixed
           # https://discourse.jupyter.org/t/advanced-z2jh-deeply-customizing-the-spawner/8432
           # class CustomSpawner(BinderSpawnerMixin, LocalRegistryMixin, KubeSpawner):
-          class CustomSpawner(BinderSpawnerMixin, KubeSpawner):
-          # class CustomSpawner(KubeSpawner):
+          # class CustomSpawner(BinderSpawnerMixin, KubeSpawner):
+          class CustomSpawner(KubeSpawner):
 
               def start(self):
                 # if not self.auth_enabled:
