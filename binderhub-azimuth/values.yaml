@@ -56,7 +56,8 @@ binderhub:
 
           # Until https://github.com/jupyterhub/kubespawner/issues/498 is fixed
           # https://discourse.jupyter.org/t/advanced-z2jh-deeply-customizing-the-spawner/8432
-          class CustomSpawner(BinderSpawnerMixin, LocalRegistryMixin, KubeSpawner):
+          # class CustomSpawner(BinderSpawnerMixin, LocalRegistryMixin, KubeSpawner):
+          class CustomSpawner(BinderSpawnerMixin, KubeSpawner):
 
               def _build_common_labels(self, extra_labels):
                   labels = super()._build_common_labels(extra_labels)
