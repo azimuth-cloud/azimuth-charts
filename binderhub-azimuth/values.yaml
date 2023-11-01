@@ -57,8 +57,18 @@ binderhub:
           # Until https://github.com/jupyterhub/kubespawner/issues/498 is fixed
           # https://discourse.jupyter.org/t/advanced-z2jh-deeply-customizing-the-spawner/8432
           # class CustomSpawner(BinderSpawnerMixin, LocalRegistryMixin, KubeSpawner):
-          # class CustomSpawner(BinderSpawnerMixin, KubeSpawner):
-          class CustomSpawner(KubeSpawner):
+          class CustomSpawner(BinderSpawnerMixin, KubeSpawner):
+          # class CustomSpawner(KubeSpawner):
+
+              def start(self):
+                # if not self.auth_enabled:
+                #     if "token" not in self.user_options:
+                #         raise web.HTTPError(400, "token required")
+                #     if "image" not in self.user_options:
+                #         raise web.HTTPError(400, "image required")
+                if "image" in self.user_options:
+                    self.image = self.user_options["image"]
+                return super().start()
 
               def _build_common_labels(self, extra_labels):
                   labels = super()._build_common_labels(extra_labels)
