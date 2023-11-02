@@ -257,7 +257,7 @@ binderhub:
   config:
     BinderHub:
       # Auth is handled by Zenith
-      auth_enabled: false
+      auth_enabled: true
       # Local url should be set explicitly here since (external) 
       # hub_url is overwritten dynamically in extraConfig
       hub_url_local: http://hub:8081/
