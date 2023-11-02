@@ -37,6 +37,21 @@ binderhub:
           authenticator_class: RemoteUserAuthenticator
         BinderSpawner:
           auth_enabled: true
+      # Config for deferring to JupyterHub for auth as suggested here:
+      # https://binderhub.readthedocs.io/en/latest/authentication.html
+      redirectToServer: false
+      services:
+        binder:
+          oauth_client_id: service-binderhub
+          oauth_no_confirm: true
+          # NOTE: This won't work in general, not sure if possible to workaround...
+          oauth_redirect_uri: "https://binder.scott-test-1.svc/oauth_callback"
+      loadRoles:
+        user:
+          scopes:
+            - self
+            - "access:services"
+
       networkPolicy:
         enabled: false
       # Use mounted ConfigMap instead of extraConfig directly to allow
