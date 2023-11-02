@@ -32,11 +32,11 @@ binderhub:
       continuous:
         enabled: false
     hub:
-      config:
-        # JupyterHub:
-        #   authenticator_class: RemoteUserAuthenticator
-        # BinderSpawner:
-          # auth_enabled: true
+      # config:
+      #   JupyterHub:
+      #     authenticator_class: RemoteUserAuthenticator
+      #   BinderSpawner:
+      #     auth_enabled: true
       networkPolicy:
         enabled: false
       # Use mounted ConfigMap instead of extraConfig directly to allow
@@ -125,7 +125,7 @@ binderhub:
                           "--ip=0.0.0.0",
                           f"--port={self.port}",
                           f"--NotebookApp.base_url={self.server.base_url}",
-                          f"--NotebookApp.token={self.user_options['token']}",
+                          # f"--NotebookApp.token={self.user_options['token']}",
                           "--NotebookApp.trust_xheaders=True",
                       ]
                       if self.default_url:
