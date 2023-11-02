@@ -45,7 +45,8 @@ binderhub:
           oauth_client_id: service-binderhub
           oauth_no_confirm: true
           # NOTE: This won't work in general, not sure if possible to workaround...
-          oauth_redirect_uri: "http://binder.scott-test-1.svc/oauth_callback"
+          # oauth_redirect_uri: "http://binder.scott-test-1.svc/oauth_callback"
+          oauth_redirect_uri: "http://tqeiz9jvie1xiuxr0rkitqpszljzsvy0ow.apps.128-232-226-111.sslip.io"
       loadRoles:
         user:
           scopes:
