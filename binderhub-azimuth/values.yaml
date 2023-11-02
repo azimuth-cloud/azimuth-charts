@@ -212,6 +212,7 @@ binderhub:
           c.JupyterHub.authenticator_class = RemoteUserAuthenticator
 
     singleuser:
+      cmd: jupyterhub-singleuser
       networkPolicy:
         enabled: false
       defaultUrl: /lab
