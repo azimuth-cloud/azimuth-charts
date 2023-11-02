@@ -149,7 +149,9 @@ binderhub:
                       # if "token" not in self.user_options:
                       #     raise web.HTTPError(400, "token required")
                       if "image" not in self.user_options:
-                          raise web.HTTPError(400, "image required")
+                          # raise web.HTTPError(400, "image required")
+                          # Use the default jupyterhub image
+                          self.image = "jupyterhub/k8s-singleuser-sample:3.0.3"
                   if "image" in self.user_options:
                       self.image = self.user_options["image"]
                   return super().start()
