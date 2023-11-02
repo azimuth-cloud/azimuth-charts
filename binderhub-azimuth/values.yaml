@@ -52,6 +52,12 @@ binderhub:
           scopes:
             - self
             - "access:services"
+      # Allow each user to have multiple serviers running
+      # (i.e. a few binderhub ones + a stock jupyterhub instance)
+      allowNamedServers: true
+      # change this value as you wish,
+      # or set to 0 if you don't want to have any limit
+      namedServerLimitPerUser: 5
 
       networkPolicy:
         enabled: false
@@ -301,3 +307,4 @@ binderhub:
         pass
       zenith_url = hub_zenith_reservation[0]['status']['fqdn']
       c.BinderHub.hub_url = f'http://{zenith_url}'
+      c.JupyterHub.base_url = f'http://{zenith_url}'
