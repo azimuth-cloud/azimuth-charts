@@ -307,4 +307,4 @@ binderhub:
         pass
       zenith_url = hub_zenith_reservation[0]['status']['fqdn']
       c.BinderHub.hub_url = f'http://{zenith_url}'
-      c.HubOAuth.base_url = f'http://{zenith_url}'
+      c.HubOAuth.hub_host = f'http://{zenith_url}'
