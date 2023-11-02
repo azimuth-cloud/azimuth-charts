@@ -280,6 +280,7 @@ binderhub:
     BinderHub:
       # Auth is handled by Zenith
       auth_enabled: true
+      hub_url: http://ne17gfhp8bws4k9if5kd3ww6a6etoy6d7u.apps.128-232-226-111.sslip.io/
       # Local url should be set explicitly here since (external) 
       # hub_url is overwritten dynamically in extraConfig
       hub_url_local: http://hub:8081/
@@ -307,4 +308,3 @@ binderhub:
         pass
       zenith_url = hub_zenith_reservation[0]['status']['fqdn']
       c.BinderHub.hub_url = f'http://{zenith_url}'
-      c.JupyterHub.base_url = f'http://{zenith_url}'
