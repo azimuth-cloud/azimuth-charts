@@ -32,11 +32,11 @@ binderhub:
       continuous:
         enabled: false
     hub:
-      # config:
-      #   JupyterHub:
-      #     authenticator_class: RemoteUserAuthenticator
-      #   BinderSpawner:
-      #     auth_enabled: true
+      config:
+        JupyterHub:
+          authenticator_class: RemoteUserAuthenticator
+        BinderSpawner:
+          auth_enabled: true
       networkPolicy:
         enabled: false
       # Use mounted ConfigMap instead of extraConfig directly to allow
