@@ -40,11 +40,11 @@ binderhub:
       # Config for deferring to JupyterHub for auth as suggested here:
       # https://binderhub.readthedocs.io/en/latest/authentication.html
       redirectToServer: false
-      services:
-        binder:
-          oauth_no_confirm: true
-          oauth_client_id: service-binderhub
-          oauth_redirect_uri: "http://aq199ertbl5ceowopctzqw2uio5gb4t1wn.apps.128-232-226-111.sslip.io/oauth_callback"
+      # services:
+      #   binder:
+      #     oauth_no_confirm: true
+      #     oauth_client_id: service-binderhub
+      #     oauth_redirect_uri: "http://aq199ertbl5ceowopctzqw2uio5gb4t1wn.apps.128-232-226-111.sslip.io/oauth_callback"
           # NOTE: This won't work in general, not sure if possible to workaround...
           # oauth_redirect_uri: "http://binder.scott-test-1.svc/oauth_callback"
           # oauth_redirect_uri: "http://tqeiz9jvie1xiuxr0rkitqpszljzsvy0ow.apps.128-232-226-111.sslip.io/oauth_callback"
@@ -320,5 +320,16 @@ binderhub:
 
       c.BinderHub.hub_url = f'http://{jupyter_zenith_url}'
       c.HubOAuth.hub_host = f'http://{jupyter_zenith_url}'
-      c.HubOAuth.oauth_redirect_uri = f'http://{binder_zenith_url}/oauth_callback'
-      c.HubOAuth.oauth_client_id = "service-binderhub"
+      # c.HubOAuth.oauth_redirect_uri = f'http://{binder_zenith_url}/oauth_callback'
+      # c.HubOAuth.oauth_client_id = "service-binderhub"
+
+      print("Before:", c.JupyterHub.services)
+      c.JupyterHub.services = [
+        {
+          "name": "binder",
+          "oauth_redirect_uri": f'http://{binder_zenith_url}/oauth_callback',
+          "oauth_client_id": "service-binderhub",
+          "oauth_no_confirm": True,
+        }
+      ]
+      print("After:", c.JupyterHub.services)
