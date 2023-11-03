@@ -272,7 +272,7 @@ binderhub:
               print("Services after:", c.JupyterHub.services)
 
           # Run the function in the existing event loop
-          await set_zenith_url()
+          set_zenith_url()
 
           # if __name__ == '__main__': # Never executes
           # if __name__ == 'builtins': # Leads to 'RuntimeError: This event loop is already running'
