@@ -267,7 +267,7 @@ binderhub:
           # binder_zenith_url = binder_zenith_reservation[0]['status']['fqdn']
 
           print("Before:", c.JupyterHub.services)
-          c.JupyterHub.services = [
+          c.JupyterHub.services.append(
             {
               "name": "binder",
               # "oauth_redirect_uri": f'http://{binder_zenith_url}/oauth_callback',
@@ -275,7 +275,7 @@ binderhub:
               "oauth_client_id": "service-binderhub",
               "oauth_no_confirm": True,
             }
-          ]
+          )
           print("After:", c.JupyterHub.services)
 
     singleuser:
