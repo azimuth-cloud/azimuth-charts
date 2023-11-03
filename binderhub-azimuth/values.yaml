@@ -32,6 +32,10 @@ binderhub:
       continuous:
         enabled: false
     hub:
+      args:
+        - bash
+        - -c
+        - "pip install kubernetes && jupyterhub --config /usr/local/etc/jupyterhub/jupyterhub_config.py --upgrade-db"
       config:
         JupyterHub:
           authenticator_class: RemoteUserAuthenticator
@@ -235,10 +239,10 @@ binderhub:
           c.JupyterHub.authenticator_class = RemoteUserAuthenticator
 
         # TODO: Make note of why install must happen in separate file
-        98-k8s-client-install.py: |        
-          import sys, subprocess
-          subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'kubernetes'])
-          subprocess.check_call([sys.executable, '-m', 'pip', 'list'])
+        # 98-k8s-client-install.py: |        
+        #   import sys, subprocess
+        #   subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'kubernetes'])
+        #   subprocess.check_call([sys.executable, '-m', 'pip', 'list'])
 
         99-zenith.py: |
           import os
