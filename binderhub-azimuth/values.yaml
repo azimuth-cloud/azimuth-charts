@@ -243,6 +243,8 @@ binderhub:
           import asyncio
           from kubernetes_asyncio import client, config
 
+          print(__name__)
+
           async def main():
               config.load_incluster_config()
               # use the context manager to close http sessions automatically
