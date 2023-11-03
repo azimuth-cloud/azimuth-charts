@@ -32,6 +32,8 @@ binderhub:
       continuous:
         enabled: false
     hub:
+      # We install the kubernetes client here so that we can use it to look
+      # up zenith service urls for setting various config settings dynamically
       args:
         - bash
         - -c
@@ -48,10 +50,9 @@ binderhub:
         binder:
           oauth_no_confirm: true
           oauth_client_id: service-binderhub
+          # NOTE: This gets overwritten dynamically in both binderhub.extraConfig
+          # and in binderhub.jupyterhub.hub.extraConfig
           oauth_redirect_uri: "http://placeholder.com"
-          # NOTE: This won't work in general, not sure if possible to workaround...
-          # oauth_redirect_uri: "http://binder.scott-test-1.svc/oauth_callback"
-          # oauth_redirect_uri: "http://tqeiz9jvie1xiuxr0rkitqpszljzsvy0ow.apps.128-232-226-111.sslip.io/oauth_callback"
       loadRoles:
         user:
           scopes:
@@ -78,130 +79,138 @@ binderhub:
         mountPath: /usr/local/etc/jupyterhub/jupyterhub_config.d/
 
       extraConfig:
-        0-binderspawnermixin: |
-          """
-          Helpers for creating BinderSpawners
+        # 0-binderspawnermixin: |
+        #   """
+        #   Helpers for creating BinderSpawners
 
-          FIXME:
-          This file is defined in binderhub/binderspawner_mixin.py
-          and is copied to helm-chart/binderhub/values.yaml
-          by ci/check_embedded_chart_code.py
+        #   FIXME:
+        #   This file is defined in binderhub/binderspawner_mixin.py
+        #   and is copied to helm-chart/binderhub/values.yaml
+        #   by ci/check_embedded_chart_code.py
 
-          The BinderHub repo is just used as the distribution mechanism for this spawner,
-          BinderHub itself doesn't require this code.
+        #   The BinderHub repo is just used as the distribution mechanism for this spawner,
+        #   BinderHub itself doesn't require this code.
 
-          Longer term options include:
-          - Move BinderSpawnerMixin to a separate Python package and include it in the Z2JH Hub
-            image
-          - Override the Z2JH hub with a custom image built in this repository
-          - Duplicate the code here and in binderhub/binderspawner_mixin.py
-          """
-          from tornado import web
-          from traitlets import Bool, Unicode
-          from traitlets.config import Configurable
+        #   Longer term options include:
+        #   - Move BinderSpawnerMixin to a separate Python package and include it in the Z2JH Hub
+        #     image
+        #   - Override the Z2JH hub with a custom image built in this repository
+        #   - Duplicate the code here and in binderhub/binderspawner_mixin.py
+        #   """
+        #   from tornado import web
+        #   from traitlets import Bool, Unicode
+        #   from traitlets.config import Configurable
 
 
-          class BinderSpawnerMixin(Configurable):
-              """
-              Mixin to convert a JupyterHub container spawner to a BinderHub spawner
+        #   class BinderSpawnerMixin(Configurable):
+        #       """
+        #       Mixin to convert a JupyterHub container spawner to a BinderHub spawner
 
-              Container spawner must support the following properties that will be set
-              via spawn options:
-              - image: Container image to launch
-              - token: JupyterHub API token
-              """
+        #       Container spawner must support the following properties that will be set
+        #       via spawn options:
+        #       - image: Container image to launch
+        #       - token: JupyterHub API token
+        #       """
 
-              def __init__(self, *args, **kwargs):
-                  # Is this right? Is it possible to having multiple inheritance with both
-                  # classes using traitlets?
-                  # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
-                  # https://github.com/ipython/traitlets/pull/175
-                  super().__init__(*args, **kwargs)
+        #       def __init__(self, *args, **kwargs):
+        #           # Is this right? Is it possible to having multiple inheritance with both
+        #           # classes using traitlets?
+        #           # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
+        #           # https://github.com/ipython/traitlets/pull/175
+        #           super().__init__(*args, **kwargs)
 
-              auth_enabled = Bool(
-                  False,
-                  help="""
-                  Enable authenticated binderhub setup.
+        #       auth_enabled = Bool(
+        #           False,
+        #           help="""
+        #           Enable authenticated binderhub setup.
 
-                  Requires `jupyterhub-singleuser` to be available inside the repositories
-                  being built.
-                  """,
-                  config=True,
-              )
+        #           Requires `jupyterhub-singleuser` to be available inside the repositories
+        #           being built.
+        #           """,
+        #           config=True,
+        #       )
 
-              cors_allow_origin = Unicode(
-                  "",
-                  help="""
-                  Origins that can access the spawned notebooks.
+        #       cors_allow_origin = Unicode(
+        #           "",
+        #           help="""
+        #           Origins that can access the spawned notebooks.
 
-                  Sets the Access-Control-Allow-Origin header in the spawned
-                  notebooks. Set to '*' to allow any origin to access spawned
-                  notebook servers.
+        #           Sets the Access-Control-Allow-Origin header in the spawned
+        #           notebooks. Set to '*' to allow any origin to access spawned
+        #           notebook servers.
 
-                  See also BinderHub.cors_allow_origin in binderhub config
-                  for controlling CORS policy for the BinderHub API endpoint.
-                  """,
-                  config=True,
-              )
+        #           See also BinderHub.cors_allow_origin in binderhub config
+        #           for controlling CORS policy for the BinderHub API endpoint.
+        #           """,
+        #           config=True,
+        #       )
 
-              def get_args(self):
-                  if self.auth_enabled:
-                      args = super().get_args()
-                  else:
-                      args = [
-                          "--ip=0.0.0.0",
-                          f"--port={self.port}",
-                          f"--NotebookApp.base_url={self.server.base_url}",
-                          # f"--NotebookApp.token={self.user_options['token']}",
-                          "--NotebookApp.trust_xheaders=True",
-                      ]
-                      if self.default_url:
-                          args.append(f"--NotebookApp.default_url={self.default_url}")
+        #       def get_args(self):
+        #           if self.auth_enabled:
+        #               args = super().get_args()
+        #           else:
+        #               args = [
+        #                   "--ip=0.0.0.0",
+        #                   f"--port={self.port}",
+        #                   f"--NotebookApp.base_url={self.server.base_url}",
+        #                   # f"--NotebookApp.token={self.user_options['token']}",
+        #                   "--NotebookApp.trust_xheaders=True",
+        #               ]
+        #               if self.default_url:
+        #                   args.append(f"--NotebookApp.default_url={self.default_url}")
 
-                      if self.cors_allow_origin:
-                          args.append("--NotebookApp.allow_origin=" + self.cors_allow_origin)
-                      # allow_origin=* doesn't properly allow cross-origin requests to single files
-                      # see https://github.com/jupyter/notebook/pull/5898
-                      if self.cors_allow_origin == "*":
-                          args.append("--NotebookApp.allow_origin_pat=.*")
-                      args += self.args
-                      # ServerApp compatibility: duplicate NotebookApp args
-                      for arg in list(args):
-                          if arg.startswith("--NotebookApp."):
-                              args.append(arg.replace("--NotebookApp.", "--ServerApp."))
-                  return args
+        #               if self.cors_allow_origin:
+        #                   args.append("--NotebookApp.allow_origin=" + self.cors_allow_origin)
+        #               # allow_origin=* doesn't properly allow cross-origin requests to single files
+        #               # see https://github.com/jupyter/notebook/pull/5898
+        #               if self.cors_allow_origin == "*":
+        #                   args.append("--NotebookApp.allow_origin_pat=.*")
+        #               args += self.args
+        #               # ServerApp compatibility: duplicate NotebookApp args
+        #               for arg in list(args):
+        #                   if arg.startswith("--NotebookApp."):
+        #                       args.append(arg.replace("--NotebookApp.", "--ServerApp."))
+        #           return args
 
-              def start(self):
-                  if not self.auth_enabled:
-                      # if "token" not in self.user_options:
-                      #     raise web.HTTPError(400, "token required")
-                      if "image" not in self.user_options:
-                          # raise web.HTTPError(400, "image required")
-                          # Use the default jupyterhub image
-                          self.image = "jupyterhub/k8s-singleuser-sample:3.0.3"
-                  if "image" in self.user_options:
-                      self.image = self.user_options["image"]
-                  return super().start()
+        #       def start(self):
+        #           if not self.auth_enabled:
+        #               # if "token" not in self.user_options:
+        #               #     raise web.HTTPError(400, "token required")
+        #               if "image" not in self.user_options:
+        #                   # raise web.HTTPError(400, "image required")
+        #                   # Use the default jupyterhub image
+        #                   self.image = "jupyterhub/k8s-singleuser-sample:3.0.3"
+        #           if "image" in self.user_options:
+        #               self.image = self.user_options["image"]
+        #           return super().start()
 
-              def get_env(self):
-                  env = super().get_env()
-                  if "repo_url" in self.user_options:
-                      env["BINDER_REPO_URL"] = self.user_options["repo_url"]
-                  for key in (
-                      "binder_ref_url",
-                      "binder_launch_host",
-                      "binder_persistent_request",
-                      "binder_request",
-                  ):
-                      if key in self.user_options:
-                          env[key.upper()] = self.user_options[key]
-                  return env
+        #       def get_env(self):
+        #           env = super().get_env()
+        #           if "repo_url" in self.user_options:
+        #               env["BINDER_REPO_URL"] = self.user_options["repo_url"]
+        #           for key in (
+        #               "binder_ref_url",
+        #               "binder_launch_host",
+        #               "binder_persistent_request",
+        #               "binder_request",
+        #           ):
+        #               if key in self.user_options:
+        #                   env[key.upper()] = self.user_options[key]
+        #           return env
         customspawner.py: |
           from kubespawner import KubeSpawner
 
           # Until https://github.com/jupyterhub/kubespawner/issues/498 is fixed
           # https://discourse.jupyter.org/t/advanced-z2jh-deeply-customizing-the-spawner/8432
           class CustomSpawner(BinderSpawnerMixin, LocalRegistryMixin, KubeSpawner):
+
+              def start(self):
+                  # Note(sd109): Image will get overwritten by super().start() call
+                  # if spawner is invoked via binderhub rather than jupyterhub
+                  # so this is just setting the default image for servers spawned
+                  # directly from jupyterhub
+                  self.image = "jupyterhub/k8s-singleuser-sample:3.0.3"
+                  return super().start()
 
               def _build_common_labels(self, extra_labels):
                   labels = super()._build_common_labels(extra_labels)
@@ -236,9 +245,10 @@ binderhub:
               async def authenticate(self, *args, **kwargs):
                   raise NotImplementedError()
 
-          c.JupyterHub.authenticator_class = RemoteUserAuthenticator
-
-        99-zenith.py: |
+        # Use the kubernetes python client to look up the assigned Zenith urls at run time.
+        # This is required to allow web browsers to forward requests between the separate
+        # BinderHub and JupyterHub services
+        zenith.py: |
           import os
           from kubernetes import client, config
 
@@ -250,22 +260,18 @@ binderhub:
             'zenith.stackhpc.com', 'v1alpha1', current_namespace, 'reservations'
           )['items']
 
-          jupyter_zenith_reservation = list(filter(
-            lambda r: r['metadata']['name'].endswith('-binderhub-azimuth-jupyterhub'), reservations
-          ))
           binder_zenith_reservation = list(filter(
             lambda r: r['metadata']['name'].endswith('-binderhub-azimuth'), reservations
           ))
-          if len(jupyter_zenith_reservation) != 1 or len(binder_zenith_reservation) != 1:
+          if len(binder_zenith_reservation) != 1:
+            # If we get here then our filtering of reservation names is not specific enough
             pass # TODO: Error logging?
 
-          jupyter_zenith_url = jupyter_zenith_reservation[0]['status']['fqdn']
           binder_zenith_url = binder_zenith_reservation[0]['status']['fqdn']
-
-          # print("Before:", c.JupyterHub.services)
+          
+          # Find existing binder service entry in c.JupyterHub.services list
           binder_service_idx = [i for i, s in enumerate(c.JupyterHub.services) if s['name'] == 'binder'][0]
           c.JupyterHub.services[binder_service_idx]["oauth_redirect_uri"] = f'http://{binder_zenith_url}/oauth_callback'
-          # print("After:", c.JupyterHub.services)
 
     singleuser:
       cmd: jupyterhub-singleuser
@@ -347,6 +353,7 @@ binderhub:
         lambda r: r['metadata']['name'].endswith('-binderhub-azimuth'), reservations
       ))
       if len(jupyter_zenith_reservation) != 1 or len(binder_zenith_reservation) != 1:
+        # If we get here then our filtering of reservation names is not specific enough
         pass # TODO: Error logging?
 
       jupyter_zenith_url = jupyter_zenith_reservation[0]['status']['fqdn']
@@ -354,7 +361,4 @@ binderhub:
 
       c.BinderHub.hub_url = f'http://{jupyter_zenith_url}'
       c.HubOAuth.hub_host = f'http://{jupyter_zenith_url}'
-
-      print("Before:", os.environ)
       os.environ['JUPYTERHUB_OAUTH_CALLBACK_URL'] = f'http://{binder_zenith_url}/oauth_callback'
-      print("After:", os.environ)
