@@ -243,9 +243,7 @@ binderhub:
           import asyncio
           from kubernetes_asyncio import client, config
 
-          print(__name__)
-
-          async def main():
+          async def set_zenith_url():
               config.load_incluster_config()
               # use the context manager to close http sessions automatically
               api = client.CustomObjectsApi()
@@ -273,11 +271,14 @@ binderhub:
               c.JupyterHub.services[binder_service_idx]["oauth_redirect_uri"] = f'http://{binder_zenith_url}/oauth_callback'
               print("Services after:", c.JupyterHub.services)
 
-          # if __name__ == '__main__':
-          if __name__ == 'builtins':
-              loop = asyncio.get_event_loop()
-              loop.run_until_complete(main())
-              loop.close()
+          # Run the function in the existing event loop
+          await set_zenith_url()
+
+          # if __name__ == '__main__': # Never executes
+          # if __name__ == 'builtins': # Leads to 'RuntimeError: This event loop is already running'
+          #     loop = asyncio.get_event_loop()
+          #     loop.run_until_complete(main())
+          #     loop.close()
 
     singleuser:
       cmd: jupyterhub-singleuser
