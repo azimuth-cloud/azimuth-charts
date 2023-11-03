@@ -273,7 +273,8 @@ binderhub:
               c.JupyterHub.services[binder_service_idx]["oauth_redirect_uri"] = f'http://{binder_zenith_url}/oauth_callback'
               print("Services after:", c.JupyterHub.services)
 
-          if __name__ == '__main__':
+          # if __name__ == '__main__':
+          if __name__ == 'builtins':
               loop = asyncio.get_event_loop()
               loop.run_until_complete(main())
               loop.close()
