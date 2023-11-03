@@ -233,12 +233,41 @@ binderhub:
                   raise NotImplementedError()
 
           c.JupyterHub.authenticator_class = RemoteUserAuthenticator
-        
-        zenith.py: |
-          # import sys, subprocess, importlib
-          # subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'kubernetes'])
-          # importlib.invalidate_caches()
-          # import kubernetes
+
+        # TODO: Make note of why install must happen in separate file
+        98-k8s-client-install.py: |        
+          import sys, subprocess
+          subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'kubernetes'])
+          subprocess.check_call([sys.executable, '-m', 'pip', 'list'])
+
+        99-zenith.py: |
+          import os
+          from kubernetes import client, config
+
+          config.load_incluster_config()
+          api = client.CustomObjectsApi()
+          current_namespace = open("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read()
+
+          reservations = api.list_namespaced_custom_object(
+            'zenith.stackhpc.com', 'v1alpha1', current_namespace, 'reservations'
+          )['items']
+
+          jupyter_zenith_reservation = list(filter(
+            lambda r: r['metadata']['name'].endswith('-binderhub-azimuth-jupyterhub'), reservations
+          ))
+          binder_zenith_reservation = list(filter(
+            lambda r: r['metadata']['name'].endswith('-binderhub-azimuth'), reservations
+          ))
+          if len(jupyter_zenith_reservation) != 1 or len(binder_zenith_reservation) != 1:
+            pass # TODO: Error logging?
+
+          jupyter_zenith_url = jupyter_zenith_reservation[0]['status']['fqdn']
+          binder_zenith_url = binder_zenith_reservation[0]['status']['fqdn']
+
+          print("Before:", c.JupyterHub.services)
+          binder_service_idx = [i for i, s in enumerate(c.JupyterHub.services) if s['name'] == 'binder'][0]
+          c.JupyterHub.services[binder_service_idx]["oauth_redirect_uri"] = f'http://{binder_zenith_url}/oauth_callback'
+          print("After:", c.JupyterHub.services)
 
           # import asyncio
           # from kubernetes_asyncio import client, config
