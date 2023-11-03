@@ -374,13 +374,12 @@ binderhub:
       os.environ['JUPYTERHUB_OAUTH_CALLBACK_URL'] = f'http://{binder_zenith_url}/oauth_callback'
       print("After:", os.environ)
 
-      print("Before:", c.JupyterHub.services)
+      print("Before:", c.JupyterHub.services.to_dict())
       binder_service_idx = [i for i, s in enumerate(c.JupyterHub.services) if s['name'] == 'binder'][0]
       c.JupyterHub.services[binder_service_idx]["oauth_redirect_uri"] = f'http://{binder_zenith_url}/oauth_callback'
-      print("After:", c.JupyterHub.services)
+      print("After:", c.JupyterHub.services.to_dict())
 
-      # c.HubOAuth.oauth_redirect_uri = f'http://{binder_zenith_url}/oauth_callback'
-      # c.HubOAuth.oauth_client_id = "service-binderhub"
+      c.HubOAuth.oauth_redirect_uri = f'http://{binder_zenith_url}/oauth_callback'
 
       # print("Before:", c.JupyterHub.services)
       # c.JupyterHub.services = [
