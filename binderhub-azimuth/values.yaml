@@ -234,53 +234,47 @@ binderhub:
 
           c.JupyterHub.authenticator_class = RemoteUserAuthenticator
         
-        # zenith.py: |
-        #   # Here we look up the Zenith FQDN for jupyterhub + binderhub instances on the cluster
-        #   # and set some traitlets based on these values so that browser redirections between
-        #   # binderhub and jupyterhub work correctly for OAuth flows.
+        zenith.py: |
+          # import sys, subprocess, importlib
+          # subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'kubernetes'])
+          # importlib.invalidate_caches()
+          # import kubernetes
 
-        #   # Ensure kubernetes package is available by invoking pip as a subprocess
-        #   # import sys, subprocess, time
-        #   # subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'kubernetes'])
-        #   # time.sleep(1)
+          import asyncio
+          from kubernetes_asyncio import client, config
 
-        #   # from kubernetes import client, config
+          async def main():
+              config.load_incluster_config()
+              # use the context manager to close http sessions automatically
+              api = client.CustomObjectsApi()
+              current_namespace = open("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read()
 
-        #   # config.load_incluster_config()
-        #   # api = client.CustomObjectsApi()
-        #   # current_namespace = open("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read()
+              response = await api.list_namespaced_custom_object(
+              'zenith.stackhpc.com', 'v1alpha1', current_namespace, 'reservations'
+              )
+              reservations = response['items']
 
-        #   # reservations = api.list_namespaced_custom_object(
-        #   #   'zenith.stackhpc.com', 'v1alpha1', current_namespace, 'reservations'
-        #   # )['items']
+              jupyter_zenith_reservation = list(filter(
+                lambda r: r['metadata']['name'].endswith('-binderhub-azimuth-jupyterhub'), reservations
+              ))
+              binder_zenith_reservation = list(filter(
+                lambda r: r['metadata']['name'].endswith('-binderhub-azimuth'), reservations
+              ))
+              # if len(jupyter_zenith_reservation) != 1 or len(binder_zenith_reservation) != 1:
+              #   pass # TODO: Error logging?
 
-        #   # jupyter_zenith_reservation = list(filter(
-        #   #   lambda r: r['metadata']['name'].endswith('-binderhub-azimuth-jupyterhub'), reservations
-        #   # ))
-        #   # binder_zenith_reservation = list(filter(
-        #   #   lambda r: r['metadata']['name'].endswith('-binderhub-azimuth'), reservations
-        #   # ))
-        #   # if len(jupyter_zenith_reservation) != 1 or len(binder_zenith_reservation) != 1:
-        #   #   pass # TODO: Error logging?
+              print("Services before:", c.JupyterHub.services)
+              jupyter_zenith_url = jupyter_zenith_reservation[0]['status']['fqdn']
+              binder_zenith_url = binder_zenith_reservation[0]['status']['fqdn']
+              print("BinderHub Zenith FQDN:", binder_zenith_url)
+              binder_service_idx = [i for i, s in enumerate(c.JupyterHub.services) if s['name'] == 'binder'][0]
+              c.JupyterHub.services[binder_service_idx]["oauth_redirect_uri"] = f'http://{binder_zenith_url}/oauth_callback'
+              print("Services after:", c.JupyterHub.services)
 
-        #   # jupyter_zenith_url = jupyter_zenith_reservation[0]['status']['fqdn']
-        #   # binder_zenith_url = binder_zenith_reservation[0]['status']['fqdn']
-
-        #   print("Before:", c.JupyterHub.services)
-        #   # c.JupyterHub.services.append(
-        #   #   {
-        #   #     "name": "binder",
-        #   #     # "oauth_redirect_uri": f'http://{binder_zenith_url}/oauth_callback',
-        #   #     "oauth_redirect_uri": f'https://google.com',
-        #   #     "oauth_client_id": "service-binderhub",
-        #   #     "oauth_no_confirm": True,
-        #   #   }
-        #   # )
-        #   binder_service_idx = [i for i, s in enumerate(c.JupyterHub.services) if s['name'] == 'binder'][0]
-        #   c.JupyterHub.services[binder_service_idx]["oauth_redirect_uri"] = f'https://google.com'
-        #   c.JupyterHub.services[binder_service_idx]["oauth_client_id"] = "service-binderhub"
-        #   c.JupyterHub.services[binder_service_idx]["oauth_no_confirm"] = True
-        #   print("After:", c.JupyterHub.services)
+          if __name__ == '__main__':
+              loop = asyncio.get_event_loop()
+              loop.run_until_complete(main())
+              loop.close()
 
     singleuser:
       cmd: jupyterhub-singleuser
@@ -374,13 +368,13 @@ binderhub:
       os.environ['JUPYTERHUB_OAUTH_CALLBACK_URL'] = f'http://{binder_zenith_url}/oauth_callback'
       print("After:", os.environ)
 
-      print("Services:", c.JupyterHub.services.to_dict())
+      # print("Services:", c.JupyterHub.services.to_dict())
       # print("Before:", c.JupyterHub.services.to_dict())
       # binder_service_idx = [i for i, s in enumerate(c.JupyterHub.services) if s['name'] == 'binder'][0]
       # c.JupyterHub.services[binder_service_idx]["oauth_redirect_uri"] = f'http://{binder_zenith_url}/oauth_callback'
       # print("After:", c.JupyterHub.services.to_dict())
 
-      c.HubOAuth.oauth_redirect_uri = f'http://{binder_zenith_url}/oauth_callback'
+      # c.HubOAuth.oauth_redirect_uri = f'http://{binder_zenith_url}/oauth_callback'
 
       # print("Before:", c.JupyterHub.services)
       # c.JupyterHub.services = [
