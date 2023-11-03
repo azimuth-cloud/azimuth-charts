@@ -244,6 +244,8 @@ binderhub:
 
               async def authenticate(self, *args, **kwargs):
                   raise NotImplementedError()
+        
+          c.JupyterHub.authenticator_class = RemoteUserAuthenticator
 
         # Use the kubernetes python client to look up the assigned Zenith urls at run time.
         # This is required to allow web browsers to forward requests between the separate
