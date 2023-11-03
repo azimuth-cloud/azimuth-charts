@@ -371,7 +371,7 @@ binderhub:
       c.HubOAuth.hub_host = f'http://{jupyter_zenith_url}'
 
       print("Before:", os.environ)
-      os.environ['JUPYTERHUB_OAUTH_CALLBACK_URL'] = 'f'http://{binder_zenith_url}/oauth_callback'
+      os.environ['JUPYTERHUB_OAUTH_CALLBACK_URL'] = f'http://{binder_zenith_url}/oauth_callback'
       print("After:", os.environ)
 
       # c.HubOAuth.oauth_redirect_uri = f'http://{binder_zenith_url}/oauth_callback'
