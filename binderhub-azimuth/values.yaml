@@ -280,6 +280,9 @@ binderhub:
 
     singleuser:
       cmd: jupyterhub-singleuser
+      storage:
+        # Use PVCs
+        type: dynamic
       networkPolicy:
         enabled: false
       defaultUrl: /lab
