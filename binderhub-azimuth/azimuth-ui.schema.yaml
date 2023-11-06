@@ -6,6 +6,10 @@ controls:
     minimum: 1
     step: 1
     displayUnits: GB
+  /binderhub/jupyterhub/hub/namedServerLimitPerUser:
+    type: NumberControl
+    minimum: 0
+    step: 1
   /binderhub/jupyterhub/singleuser/storage/capacity:
     type: NumberWithUnitsControl
     units: Gi
