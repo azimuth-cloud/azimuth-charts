@@ -1,9 +1,12 @@
-zenithClient:
-  iconUrl: https://raw.githubusercontent.com/jupyterhub/binderhub/main/binderhub/static/images/logo_square.png
-  description:
-  label: "Binderhub"
-  auth:
-    skip: false
+zenith:
+  binder:
+    iconUrl: https://raw.githubusercontent.com/jupyterhub/binderhub/main/binderhub/static/images/logo_square.png
+    description:
+    label: "BinderHub"
+  jupyterhub:
+    iconUrl: https://raw.githubusercontent.com/jupyter/design/master/logos/Logo%20Mark/logomark-orangebody-greyplanets/logomark-orangebody-greyplanets.png
+    description:
+    label: "JupyterHub"
 
 # Use yaml anchors to avoid repetition
 registry:
