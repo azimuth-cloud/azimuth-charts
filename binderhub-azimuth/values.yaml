@@ -2,11 +2,11 @@ zenith:
   binder:
     iconUrl: https://raw.githubusercontent.com/jupyterhub/binderhub/main/docs/source/_static/images/favicon.png
     description:
-    label: "BinderHub"
+    label: BinderHub
   jupyterhub:
     iconUrl: https://raw.githubusercontent.com/jupyter/design/master/logos/Logo%20Mark/logomark-orangebody-greyplanets/logomark-orangebody-greyplanets.png
     description:
-    label: "JupyterHub"
+    label: JupyterHub
 
 # Use yaml anchors to avoid repetition
 registry:
@@ -228,7 +228,8 @@ binderhub:
           c.KubeSpawner.image_pull_secrets = ["binderhub-registry-image-pull"]
           c.JupyterHub.spawner_class = CustomSpawner
 
-        # Configure the authentication to respect the X-Remote-User header sent by Zenith from Azimuth
+        # Configure the JupyterHub authentication to respect the
+        # X-Remote-User header sent by Zenith from Azimuth
         remoteuser.py: |
           from jupyterhub.auth import Authenticator
           from jupyterhub.handlers import BaseHandler
@@ -254,7 +255,7 @@ binderhub:
         
           c.JupyterHub.authenticator_class = RemoteUserAuthenticator
 
-        # Use the kubernetes python client to look up the assigned Zenith urls at run time.
+        # Use the kubernetes python client to look up the assigned Zenith urls at install time.
         # This is required to allow web browsers to forward requests between the separate
         # BinderHub and JupyterHub services
         zenith.py: |
@@ -305,24 +306,6 @@ binderhub:
       defaultUrl: /lab
       extraEnv:
         JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
-      # TODO: Below is default jupyterhub (but not binderhub) config to
-      # enable PVCs for storage, we should do something similar here since
-      # binderhub defaults to no persistent storage
-      # storage:
-      #   type: dynamic
-      #   extraLabels: {}
-      #   extraVolumes: []
-      #   extraVolumeMounts: []
-      #   static:
-      #     pvcName:
-      #     subPath: "{username}"
-      #   capacity: 10Gi
-      #   homeMountPath: /home/jovyan
-      #   dynamic:
-      #     storageClass:
-      #     pvcNameTemplate: claim-{username}{servername}
-      #     volumeNameTemplate: volume-{username}{servername}
-      #     storageAccessModes: [ReadWriteOnce]
   
   imageBuilderType: dind
   dind:

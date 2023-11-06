@@ -43,7 +43,7 @@
                                         "capacity": {
                                             "type": "string",
                                             "title": "Notebook storage",
-                                            "description": "The amount of storage to allocate to each user notebook. \nThis is dynamically allocated from the tenancy quota.",
+                                            "description": "The amount of storage to allocate to each user notebook. This is dynamically allocated from the tenancy quota.",
                                             "pattern": "^[1-9][0-9]*Gi$",
                                             "default": "10Gi"
                                         }
@@ -59,7 +59,7 @@
                                 "namedServerLimitPerUser": {
                                     "type": "integer",
                                     "title": "Allower servers per user",
-                                    "description": "The number of servers a user is allowed to have running simultaneously (includes the default notebook server plus all those built via Binder). Set to 0 for no limit.",
+                                    "description": "The number of servers each user is allowed to have running simultaneously. Set to 0 for no limit.",
                                     "minimum": 0,
                                     "default": 3
                                 }
@@ -74,7 +74,7 @@
                         "password": {
                             "type": "string",
                             "title": "Container registry password",
-                            "description": "The password used to authenticate with the in-cluster container registry. \nThis should be kept secret from Hub users otherwise they will be able to modify registry images from within notebooks!"
+                            "description": "The password used to authenticate with the in-cluster container registry. This should be kept secret from Hub users otherwise they will be able to modify registry images from within notebooks!"
                         }
                     },
                     "required": ["password"]
@@ -91,7 +91,7 @@
                         "capacity": {
                             "type": "string",
                             "title": "Container registry storage",
-                            "description": "The amount of storage to allocate to the BinderHub container registry. \nThis is dynamically allocated from the tenancy quota.",
+                            "description": "The storage allocatation for the BinderHub container registry. This is dynamically allocated from the tenancy quota.",
                             "pattern": "^[1-9][0-9]*Gi$",
                             "default": "10Gi"
                         }
@@ -101,7 +101,7 @@
                 "password": {
                     "type": "string",
                     "title": "Password for the in-cluster container regi",
-                    "description": "Required for securing the local registry. \nShould be set to a long random value, e.g. `openssl rand -hex 32`.",
+                    "description": "Required for securing the local registry. Should be set to a long random value, e.g. `openssl rand -hex 32`.",
                     "minLength": 8
                 }
             },
