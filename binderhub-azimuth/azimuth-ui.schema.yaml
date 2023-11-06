@@ -18,3 +18,21 @@ controls:
     minimum: 10
     step: 1
     displayUnits: GB
+  # Here we need the registry password to be set in the actually registry 
+  # pod and also to pass the same password to binderhub. We don't want this
+  # value visible in the chart UI or default values otherwise arbitrary 
+  # users would be able to modify the registry from within notebooks.
+  /registry/password:
+    visuallyHidden: true
+  # Make sure that the two password values are kept in sync using a mirror control
+  /binderhub/registry/password:
+    type: MirrorControl
+    path: /registry/password
+    visuallyHidden: true
+
+defaultGenerators:
+  # For new DaskHub instances, the API token should be generated as a long, random value
+  # The mirror control ensures that the two places it is needed are kept in sync
+  /registry/password:
+    type: random
+    length: 32

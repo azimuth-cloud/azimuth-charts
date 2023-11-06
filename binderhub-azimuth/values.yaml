@@ -13,8 +13,9 @@ registry:
   # This url domain name should match the Service 
   # resource which exposes the local container registry
   url: &registry-url http://binderhub-registry:80
-  username: &registry-username testuser
-  password: &registry-password testpassword
+  username: &registry-username registry-user
+  password: # Randomly generated within Azimuth UI (see azimuth-ui.schema.yaml)
+  # password: &registry-password testpassword
   nodeport: 31783
   storage:
     capacity: # Set in Azimuth UI
@@ -281,12 +282,21 @@ binderhub:
           binder_service_idx = [i for i, s in enumerate(c.JupyterHub.services) if s['name'] == 'binder'][0]
           c.JupyterHub.services[binder_service_idx]["oauth_redirect_uri"] = f'http://{binder_zenith_url}/oauth_callback'
 
+    # Don't cull user pods since we're limiting the number
+    # of allowed concurrent sessions per user instead. Also,
+    # culling would cause data loss since have to mount PVs
+    # at ~/data and instead of ~/ for binder-built images
+    # (see comments around homeMountPath value)
+    cull:
+      users: false
+
     singleuser:
       cmd: jupyterhub-singleuser
       storage:
         # Use PVCs
         type: dynamic
-        # NOTE: 
+        # NOTE: We can't mount the PVC at the user's home dir otherwise
+        # it will overwrite any files included in the binder repo
         homeMountPath: /home/jovyan/data
         dynamic:
           volumeNameTemplate: backing-volume
@@ -329,7 +339,8 @@ binderhub:
   registry:
     url: *registry-url
     username: *registry-username
-    password: *registry-password
+    password: # Set to mirror global registry.password value (see azimuth-ui.schema.yaml)
+    # password: *registry-password
   
   config:
     BinderHub:

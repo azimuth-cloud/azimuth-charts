@@ -55,9 +55,20 @@
                         }
                     },
                     "required": ["singleuser"]
+                },
+                "registry": {
+                    "type": "object",
+                    "properties": {
+                        "password": {
+                            "type": "string",
+                            "title": "Container registry password",
+                            "description": "The password used to authenticate with the in-cluster container registry. \nThis should be kept secret from Hub users otherwise they will be able to modify registry images from within notebooks!"
+                        }
+                    },
+                    "required": ["password"]
                 }
             },
-            "required": ["jupyterhub"]
+            "required": ["jupyterhub", "registry"]
         },
         "registry": {
             "type": "object",
@@ -74,9 +85,15 @@
                         }
                     },
                     "required": ["capacity"]
+                },
+                "password": {
+                    "type": "string",
+                    "title": "Password for the in-cluster container regi",
+                    "description": "Required for securing the local registry. \nShould be set to a long random value, e.g. `openssl rand -hex 32`.",
+                    "minLength": 8
                 }
             },
-            "required": ["storage"]
+            "required": ["storage", "password"]
         }
     },
     "required": ["binderhub", "registry"]
