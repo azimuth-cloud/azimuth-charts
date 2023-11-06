@@ -287,7 +287,7 @@ binderhub:
         # Use PVCs
         type: dynamic
         dynamic:
-          volumeNameTemplate: vol-{servername}
+          volumeNameTemplate: backing-volume
       networkPolicy:
         enabled: false
       defaultUrl: /lab
