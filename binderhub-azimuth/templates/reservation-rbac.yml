@@ -4,7 +4,6 @@ metadata:
   annotations:
     meta.helm.sh/release-name: binderhub
     meta.helm.sh/release-namespace: default
-  creationTimestamp: "2023-09-08T16:02:53Z"
   name: binderhub-zenith
 rules:
 - apiGroups:

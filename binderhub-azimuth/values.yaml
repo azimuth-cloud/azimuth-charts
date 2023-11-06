@@ -15,7 +15,6 @@ registry:
   url: &registry-url http://binderhub-registry:80
   username: &registry-username registry-user
   password: # Randomly generated within Azimuth UI (see azimuth-ui.schema.yaml)
-  # password: &registry-password testpassword
   nodeport: 31783
   storage:
     capacity: # Set in Azimuth UI
@@ -37,7 +36,7 @@ binderhub:
         enabled: false
     hub:
       # We install the kubernetes client here so that we can use it to look
-      # up zenith service urls for setting various config settings dynamically
+      # up zenith service urls for setting various config options dynamically
       args:
         - bash
         - -c
@@ -63,11 +62,11 @@ binderhub:
             - self
             - "access:services"
       # Allow each user to have multiple serviers running
-      # (i.e. a few binderhub ones + a stock jupyterhub instance)
+      # (i.e. a few binderhub images and a stock jupyterhub instance)
       allowNamedServers: true
-      # change this value as you wish,
-      # or set to 0 if you don't want to have any limit
-      # namedServerLimitPerUser: 5
+      # Number of servers allowed per user.
+      # Set to 0 for no limit.
+      namedServerLimitPerUser:
 
       networkPolicy:
         enabled: false
@@ -285,9 +284,9 @@ binderhub:
 
     # Don't cull user pods since we're limiting the number
     # of allowed concurrent sessions per user instead. Also,
-    # culling would cause data loss since have to mount PVs
+    # culling would cause data loss since we have to mount PVs
     # at ~/data and instead of ~/ for binder-built images
-    # (see comments around homeMountPath value)
+    # (see comments below on homeMountPath value)
     cull:
       users: false
 
@@ -323,7 +322,6 @@ binderhub:
     url: *registry-url
     username: *registry-username
     password: # Set to mirror global registry.password value (see azimuth-ui.schema.yaml)
-    # password: *registry-password
   
   config:
     BinderHub:
