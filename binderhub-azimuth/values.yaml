@@ -1,6 +1,6 @@
 zenith:
   binder:
-    iconUrl: https://raw.githubusercontent.com/jupyterhub/binderhub/main/binderhub/static/images/logo_square.png
+    iconUrl: https://raw.githubusercontent.com/jupyterhub/binderhub/main/docs/source/_static/images/favicon.png
     description:
     label: "BinderHub"
   jupyterhub:
@@ -67,7 +67,7 @@ binderhub:
       allowNamedServers: true
       # change this value as you wish,
       # or set to 0 if you don't want to have any limit
-      namedServerLimitPerUser: 5
+      # namedServerLimitPerUser: 5
 
       networkPolicy:
         enabled: false

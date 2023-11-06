@@ -52,6 +52,18 @@
                                 }
                             },
                             "required": ["cpu", "memory", "storage"]
+                        },
+                        "hub": {
+                            "type": "object",
+                            "properties": {
+                                "namedServerLimitPerUser": {
+                                    "type": "integer",
+                                    "title": "Allower servers per user",
+                                    "description": "The number of servers a user is allowed to have running simultaneously (includes the default notebook server plus all those built via Binder). Set to 0 for no limit.",
+                                    "minimum": 0,
+                                    "default": 3
+                                }
+                            }
                         }
                     },
                     "required": ["singleuser"]
