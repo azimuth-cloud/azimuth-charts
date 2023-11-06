@@ -286,6 +286,8 @@ binderhub:
       storage:
         # Use PVCs
         type: dynamic
+        # NOTE: 
+        homeMountPath: /home/jovyan/data
         dynamic:
           volumeNameTemplate: backing-volume
       networkPolicy:
