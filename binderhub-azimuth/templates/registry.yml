@@ -76,12 +76,12 @@ data:
   htpasswd: {{ htpasswd .username .password | b64enc }}
 kind: Secret
 metadata:
-  name: {{ .Values.registry.credentialsSecretName }}
+  name: {{ .credentialsSecretName }}
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ .Values.registry.imagePullSecretName }}
+  name: {{ .imagePullSecretName }}
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: >
