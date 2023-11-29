@@ -57,8 +57,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: binderhub-registry
-  # name: {{ (urlParse .Values.binderhub.registry.url).host |  }}
+  name: {{ .Values.registry.serviceName }}
   labels: {{ include "binderhub-azimuth.labels" . | nindent 4 }}
 spec:
   ports:
@@ -77,12 +76,12 @@ data:
   htpasswd: {{ htpasswd .username .password | b64enc }}
 kind: Secret
 metadata:
-  name: binderhub-registry-creds
+  name: {{ .Values.registry.credentialsSecretName }}
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: binderhub-registry-image-pull
+  name: {{ .Values.registry.imagePullSecretName }}
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: >

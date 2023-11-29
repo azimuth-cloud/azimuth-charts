@@ -7,12 +7,16 @@ zenith:
     iconUrl: https://raw.githubusercontent.com/jupyter/design/master/logos/Logo%20Mark/logomark-orangebody-greyplanets/logomark-orangebody-greyplanets.png
     description:
     label: JupyterHub
+  # Name for the Role and RoleBinding resources which
+  # allow binderhub pods to list Zenith reservations
+  rbacName: binderhub-zenith
 
 # Use yaml anchors to avoid repetition
 registry:
   image: docker.io/registry
   tag: 2.8.3
-  # This url domain name should match the Service 
+  serviceName: binderhub-registry
+  # This url domain name should match the name of the Service
   # resource which exposes the local container registry
   url: &registry-url http://binderhub-registry:80
   username: &registry-username registry-user
@@ -20,6 +24,8 @@ registry:
   nodeport: 31783
   storage:
     capacity: # Set in Azimuth UI
+  credentialsSecretName: binderhub-registry-creds
+  imagePullSecretName: binderhub-registry-image-pull
 
 binderhub:
   jupyterhub:

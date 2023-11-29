@@ -4,7 +4,7 @@ metadata:
   annotations:
     meta.helm.sh/release-name: binderhub
     meta.helm.sh/release-namespace: default
-  name: binderhub-zenith
+  name: {{ .Values.zenith.rbacName }}
 rules:
 - apiGroups:
   - "zenith.stackhpc.com"
@@ -17,11 +17,11 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: binderhub-zenith
+  name: {{ .Values.zenith.rbacName }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: binderhub-zenith
+  name: {{ .Values.zenith.rbacName }}
 subjects:
 - kind: ServiceAccount
   name: binderhub
