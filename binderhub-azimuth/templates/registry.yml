@@ -16,7 +16,7 @@ spec:
         app: docker-registry # Must match spec.selector field of Service
     spec:
       containers:
-      - image: docker.io/registry
+      - image: {{ printf "%s:%s" .Values.registry.image .Values.registry.tag }}
         name: registry
         volumeMounts:
         - mountPath: /var/lib/registry

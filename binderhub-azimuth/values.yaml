@@ -10,6 +10,8 @@ zenith:
 
 # Use yaml anchors to avoid repetition
 registry:
+  image: docker.io/registry
+  tag: 2.8.3
   # This url domain name should match the Service 
   # resource which exposes the local container registry
   url: &registry-url http://binderhub-registry:80
