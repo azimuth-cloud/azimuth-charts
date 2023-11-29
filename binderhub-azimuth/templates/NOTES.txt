@@ -2,9 +2,11 @@ BinderHub provides a multi-user [Jupyter Notebook](https://jupyter.org/) environ
 with customisable notebook images available online, ideal for classrooms and research labs.
 
 Each user gets their own notebook server and storage allocation, where they can
-work independently of each other.
+work independently of each other. The storage allocation is mounted at `~/data/`
+inside the JupyterHub environment so any data which requires persistence should
+be stored there.
 
 If BinderHub is deployed on a Kubernetes cluster with autoscaling of nodes, then
 a new node may be created on demand to fulfil a user request for a notebook server,
-if there is not sufficient space on the cluster. When idle notebook servers are culled,
-the Kubernetes cluster can then scale back down.
+if there is not sufficient space on the cluster. When notebook servers are deleted
+by users, the Kubernetes cluster can then scale back down.
