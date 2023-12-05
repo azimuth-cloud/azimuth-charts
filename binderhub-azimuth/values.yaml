@@ -27,6 +27,10 @@ registry:
   credentialsSecretName: binderhub-registry-creds
   imagePullSecretName: binderhub-registry-image-pull
 
+# Whether or not to use https when constructing OAuth
+# redirect URLs for binderhub <--> jupyterhub flow
+binderhub_oauth_use_https: true
+
 binderhub:
   jupyterhub:
     proxy:
@@ -342,38 +346,28 @@ binderhub:
       image_prefix: binderhub-registry:80/azimuth/
     DockerRegistry:
       token_url: None
-  
+
+  extraVolumes:
+  - name: binder-extra-config
+    configMap:
+      # Note: Name must match ConfigMap in templates/binder-config.yml
+      name: binder-extra-config
+  extraVolumeMounts:
+  - name: binder-extra-config
+    mountPath: /etc/binderhub/config/extra_config.d/
+
   extraConfig:
-    zenith-hub-url.py: |
-      # Here we look up the Zenith FQDN for jupyterhub + binderhub instances on the cluster
-      # and set some traitlets based on these values so that browser redirections between
-      # binderhub and jupyterhub work correctly for both OAuth flows and for notebook
-      # launching.
-
-      import os
-      from kubernetes import client, config
-
-      config.load_incluster_config()
-      api = client.CustomObjectsApi()
-      current_namespace = open("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read()
-
-      reservations = api.list_namespaced_custom_object(
-        'zenith.stackhpc.com', 'v1alpha1', current_namespace, 'reservations'
-      )['items']
-
-      jupyter_zenith_reservation = list(filter(
-        lambda r: r['metadata']['name'].endswith('-binderhub-azimuth-jupyterhub'), reservations
-      ))
-      binder_zenith_reservation = list(filter(
-        lambda r: r['metadata']['name'].endswith('-binderhub-azimuth'), reservations
-      ))
-      if len(jupyter_zenith_reservation) != 1 or len(binder_zenith_reservation) != 1:
-        # If we get here then our filtering of reservation names is not specific enough
-        pass # TODO: Error logging?
-
-      jupyter_zenith_url = jupyter_zenith_reservation[0]['status']['fqdn']
-      binder_zenith_url = binder_zenith_reservation[0]['status']['fqdn']
-
-      c.BinderHub.hub_url = f'http://{jupyter_zenith_url}'
-      c.HubOAuth.hub_host = f'http://{jupyter_zenith_url}'
-      os.environ['JUPYTERHUB_OAUTH_CALLBACK_URL'] = f'http://{binder_zenith_url}/oauth_callback'
+    # This snippet allows us to mount config maps into the binder pod and use them as python files for extra configuration. The advantage of this approach
+    # vs including the configuration directly in this `extraConfig` section is that we are then able to use Helm templating in the config maps. This functionality
+    # already exists in the underlying JupyterHub chart but not in the BinderHub chart. The following code snippet is adapted from:
+    # https://github.com/jupyterhub/zero-to-jupyterhub-k8s/blob/e1e1b49fba13c1e1c0ee454baf5998e8bc2ec725/jupyterhub/files/hub/jupyterhub_config.py#L483C1-L492   
+    read-config-volumes.py: |
+      config_dir = "/etc/binderhub/config/extra_config.d"
+      if os.path.isdir(config_dir):
+          for file_path in sorted(glob.glob(f"{config_dir}/*.py")):
+              file_name = os.path.basename(file_path)
+              print(f"Loading {config_dir} config: {file_name}")
+              with open(file_path) as f:
+                  file_content = f.read()
+              # compiling makes debugging easier: https://stackoverflow.com/a/437857
+              exec(compile(source=file_content, filename=file_name, mode="exec"))

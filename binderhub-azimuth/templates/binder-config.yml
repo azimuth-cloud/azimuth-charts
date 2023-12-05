@@ -1,0 +1,42 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+# Note: Name must match .Values.binderhub.binder.extraVolumes entry
+  name: binder-extra-config
+data:
+    zenith-hub-url.py: |
+      # Here we look up the Zenith FQDN for jupyterhub + binderhub instances on the cluster
+      # and set some traitlets based on these values so that browser redirections between
+      # binderhub and jupyterhub work correctly for both OAuth flows and for notebook
+      # launching.
+
+      import os
+      from kubernetes import client, config
+
+      config.load_incluster_config()
+      api = client.CustomObjectsApi()
+      current_namespace = open("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read()
+
+      reservations = api.list_namespaced_custom_object(
+        'zenith.stackhpc.com', 'v1alpha1', current_namespace, 'reservations'
+      )['items']
+
+      jupyter_zenith_reservation = list(filter(
+        lambda r: r['metadata']['name'].endswith('-binderhub-azimuth-jupyterhub'), reservations
+      ))
+      binder_zenith_reservation = list(filter(
+        lambda r: r['metadata']['name'].endswith('-binderhub-azimuth'), reservations
+      ))
+      if len(jupyter_zenith_reservation) != 1 or len(binder_zenith_reservation) != 1:
+        # If we get here then our filtering of reservation names is not specific enough
+        pass # TODO: Error logging?
+
+      jupyter_zenith_url = jupyter_zenith_reservation[0]['status']['fqdn']
+      binder_zenith_url = binder_zenith_reservation[0]['status']['fqdn']
+
+      # Prefix value is templated via Helm
+      prefix = '{{ ternary "https" "http" .Values.binderhub_oauth_use_https }}'
+      c.BinderHub.hub_url = f'{prefix}://{jupyter_zenith_url}'
+      c.HubOAuth.hub_host = f'{prefix}://{jupyter_zenith_url}'
+      os.environ['JUPYTERHUB_OAUTH_CALLBACK_URL'] = f'{prefix}://{binder_zenith_url}/oauth_callback'
