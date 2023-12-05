@@ -266,34 +266,6 @@ binderhub:
         
           c.JupyterHub.authenticator_class = RemoteUserAuthenticator
 
-        # Use the kubernetes python client to look up the assigned Zenith urls at install time.
-        # This is required to allow web browsers to forward requests between the separate
-        # BinderHub and JupyterHub services
-        zenith.py: |
-          import os
-          from kubernetes import client, config
-
-          config.load_incluster_config()
-          api = client.CustomObjectsApi()
-          current_namespace = open("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read()
-
-          reservations = api.list_namespaced_custom_object(
-            'zenith.stackhpc.com', 'v1alpha1', current_namespace, 'reservations'
-          )['items']
-
-          binder_zenith_reservation = list(filter(
-            lambda r: r['metadata']['name'].endswith('-binderhub-azimuth'), reservations
-          ))
-          if len(binder_zenith_reservation) != 1:
-            # If we get here then our filtering of reservation names is not specific enough
-            pass # TODO: Error logging?
-
-          binder_zenith_url = binder_zenith_reservation[0]['status']['fqdn']
-          
-          # Find existing binder service entry in c.JupyterHub.services list
-          binder_service_idx = [i for i, s in enumerate(c.JupyterHub.services) if s['name'] == 'binder'][0]
-          c.JupyterHub.services[binder_service_idx]["oauth_redirect_uri"] = f'http://{binder_zenith_url}/oauth_callback'
-
     # Don't cull user pods since we're limiting the number
     # of allowed concurrent sessions per user instead. Also,
     # culling would cause data loss since we have to mount PVs
