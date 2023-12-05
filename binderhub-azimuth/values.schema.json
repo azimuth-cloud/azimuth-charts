@@ -58,8 +58,8 @@
                             "properties": {
                                 "namedServerLimitPerUser": {
                                     "type": "integer",
-                                    "title": "Allower servers per user",
-                                    "description": "The number of servers each user is allowed to have running simultaneously. Set to 0 for no limit.",
+                                    "title": "Servers per user",
+                                    "description": "The number of notebook servers each user is allowed to have running simultaneously. Set to 0 for no limit.",
                                     "minimum": 0,
                                     "default": 3
                                 }
