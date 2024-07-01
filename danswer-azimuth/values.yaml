@@ -1,0 +1,29 @@
+zenithClient:
+  iconUrl: https://raw.githubusercontent.com/danswer-ai/danswer/1fabd9372d66cd54238847197c33f091a724803b/Danswer.png
+  description:
+  label: "Danswer"
+
+vespaVolumeSize: &vespa-capacity 10Gi
+
+danswer-stack:
+  # appVersionOverride: # e.g. v0.5.1
+  configMap:
+    AUTH_TYPE: basic
+    DISABLE_TELEMETRY: true
+    DISABLE_LLM_CHOOSE_SEARCH: true
+  nginx:
+    service:
+      type: ClusterIP
+  vespa:
+    service:
+      type: ClusterIP
+    volumeClaimTemplates:
+      - metadata:
+          name: vespa-storage
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: *vespa-capacity
+
