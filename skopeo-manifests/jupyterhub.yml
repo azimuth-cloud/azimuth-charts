@@ -1,0 +1,26 @@
+docker.io:
+  images:
+    jupyterhub/configurable-http-proxy:
+    - 4.5.3
+    jupyterhub/k8s-hub:
+    - 2.0.0
+    jupyterhub/k8s-singleuser-sample:
+    - 2.0.0
+k8s.gcr.io:
+  images:
+    kube-scheduler:
+    - v1.23.10
+registry.k8s.io:
+  images:
+    coredns/coredns:
+    - v1.9.3
+    etcd:
+    - 3.5.6-0
+    kube-apiserver:
+    - v1.26.3
+    kube-controller-manager:
+    - v1.26.3
+    kube-proxy:
+    - v1.26.3
+    kube-scheduler:
+    - v1.26.3

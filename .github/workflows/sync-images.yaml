@@ -1,0 +1,60 @@
+name: sync images
+on: push
+
+jobs:
+  sync_images:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        component:
+          - daskhub
+          - jupyterhub
+          - kubeflow
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+        # TODO: Revert to main branch before merging
+        with:
+          ref: skopeo
+
+      # Uncommment for SSH-able terminal session within runner to aid debugging
+      # - uses: actions/checkout@v2
+      # - name: Setup upterm session
+      #   uses: lhotari/action-upterm@v1
+
+      - name: Check component manifest for changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            manifest:
+              - skopeo-manifests/${{ matrix.component }}.yml
+
+      # NOTE: Need skopeo > v1.09 to avoid this issue:
+      # https://github.com/containers/skopeo/issues/1874
+      # so use containerized version
+
+      - name: Sync component images
+        id: image-sync
+        if: ${{ steps.changes.outputs.manifest == 'true' }}
+        run: |-
+          docker run --entrypoint /usr/bin/env \
+            -v $GITHUB_WORKSPACE:/home/skopeo/azimuth-charts \
+            quay.io/skopeo/stable:v1.11 \
+            skopeo sync \
+              --src yaml \
+              --dest docker \
+              --dest-creds ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} \
+              --scoped \
+              --all \
+              /home/skopeo/azimuth-charts/skopeo-manifests/${{ matrix.component }}.yml \
+              ghcr.io/stackhpc/azimuth-charts \
+              |& tee sync-output.txt
+
+      - name: Check output for any sync errors
+        run: |
+          ERR_COUNT=$(grep "level=error" sync-output.txt | wc -l)
+          if [[ $ERR_COUNT -gt 0 ]]; then
+            echo "Found $ERR_COUNT logged error messages in output of image sync step"
+            exit 1
+          fi
