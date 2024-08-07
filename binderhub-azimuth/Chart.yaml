@@ -8,10 +8,10 @@ icon: https://raw.githubusercontent.com/jupyterhub/binderhub/main/binderhub/stat
 keywords: [jupyter, binderhub]
 
 # List of latest BinderHub chart release tags can be found here:
-# https://hub.jupyter.org/helm-chart/#development-releases-binderhub 
+# https://hub.jupyter.org/helm-chart/#development-releases-binderhub
 dependencies:
   - name: binderhub
-    version: 1.0.0-0.dev.git.3437.h81a3428
+    version: 1.0.0-0.dev.git.3503.ha8a2e19
     repository: https://jupyterhub.github.io/helm-chart/
 
 annotations:
