@@ -77,7 +77,7 @@ spec:
         - --all
       restartPolicy: Never
       serviceAccountName: default
-
+---
 # Until https://github.com/unoplat/vespa-helm-charts/pull/23
 # is merged, we need to patch vespa stateful set after deployment
 # so that service label selectors match correctly.
@@ -86,16 +86,13 @@ spec:
 # deployment to trigger a retry on the Vespa setup by the API pod
 # after labels are corrected.
 # Use three separate hooks with different hook-weights to control ordering.
----
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: vespa-label-updater
   namespace: {{ .Release.Name }}
   annotations:
-    helm.sh/hook: post-install
-    helm.sh/hook: post-upgrade
-    helm.sh/hook: post-rollback
+    helm.sh/hook: post-install,post-upgrade,post-rollback
     helm.sh/hook-weight: "1"
     helm.sh/hook-delete-policy: hook-succeeded
 spec:
@@ -121,9 +118,7 @@ metadata:
   name: vespa-waiter
   namespace: {{ .Release.Name }}
   annotations:
-    helm.sh/hook: post-install
-    helm.sh/hook: post-upgrade
-    helm.sh/hook: post-rollback
+    helm.sh/hook: post-install,post-upgrade,post-rollback
     helm.sh/hook-weight: "2"
     helm.sh/hook-delete-policy: hook-succeeded
 spec:
@@ -148,9 +143,7 @@ metadata:
   name: danswer-api-restarter
   namespace: {{ .Release.Name }}
   annotations:
-    helm.sh/hook: post-install
-    helm.sh/hook: post-upgrade
-    helm.sh/hook: post-rollback
+    helm.sh/hook: post-install,post-upgrade,post-rollback
     helm.sh/hook-weight: "3"
     helm.sh/hook-delete-policy: hook-succeeded
 spec:
