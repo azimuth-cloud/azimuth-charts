@@ -20,6 +20,7 @@ rules:
   - apps
   resources:
   - statefulsets
+  - deployments
   verbs:
   - get
   - patch
@@ -29,14 +30,8 @@ rules:
   - pods
   verbs:
   - get
+  - list
   - watch
-- apiGroups:
-  - apps
-  resources:
-  - deployment
-  verbs:
-  - get
-  - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -51,6 +46,8 @@ roleRef:
   kind: Role
   name: {{ .Release.Name }}-danswer-fixup
 subjects:
+# Namespace is unique to Azimuth app so using default
+# service account is fine.
 - kind: ServiceAccount
   name: default
   namespace: {{ .Release.Name }}
@@ -79,7 +76,6 @@ spec:
         - pvc
         - --all
       restartPolicy: Never
-      # TODO: Create a separate service account
       serviceAccountName: default
 
 # Until https://github.com/unoplat/vespa-helm-charts/pull/23
@@ -115,7 +111,6 @@ spec:
         - -p
         - {{ printf "{'spec':{'template':{'metadata':{'labels':{'app.kubernetes.io/instance':'%s'}}}}}" .Release.Name | replace "'" "\"" | squote }}
       restartPolicy: Never
-      # TODO: Create a separate service account
       serviceAccountName: default
 ---
 apiVersion: batch/v1
@@ -141,7 +136,6 @@ spec:
         - --for=condition=Ready
         - pod/vespa-0
       restartPolicy: Never
-      # TODO: Create a separate service account
       serviceAccountName: default
 ---
 apiVersion: batch/v1
@@ -167,46 +161,4 @@ spec:
         - {{ .Release.Name }}
         - {{ printf "deployment/%s-danswer-stack-api-deployment" .Release.Name }}
       restartPolicy: Never
-      # TODO: Create a separate service account
       serviceAccountName: default
----
-# apiVersion: batch/v1
-# kind: Job
-# metadata:
-#   name: sts-label-updater
-#   namespace: {{ .Release.Name }}
-#   annotations:
-#     helm.sh/hook: post-install
-#     helm.sh/hook-weight: "0"
-#     helm.sh/hook-delete-policy: hook-succeeded
-# spec:
-#   template:
-#     spec:
-#       containers:
-#       - name: label-updater
-#         image: gcr.io/google_containers/hyperkube:v1.18.0
-#         command:
-#         - kubectl
-#         - patch
-#         - -n
-#         - {{ .Release.Name }}
-#         - statefulset/vespa
-#         - -p
-#         - {{ printf "{'spec':{'template':{'metadata':{'labels':{'app.kubernetes.io/instance':'%s'}}}}}" .Release.Name | replace "'" "\"" | squote }}
-#         - "&&"
-#         - kubectl
-#         - wait
-#         - -n
-#         - {{ .Release.Name }}
-#         - --for=condition=Ready
-#         - pod/vespa-0
-#         - "&&"
-#         - kubectl
-#         - rollout
-#         - restart
-#         - -n
-#         - {{ .Release.Name }}
-#         - {{ printf "deployment/%s-danswer-stack-api-deployment" .Release.Name }}
-#       restartPolicy: Never
-#       # TODO: Create a separate service account
-#       serviceAccountName: default
