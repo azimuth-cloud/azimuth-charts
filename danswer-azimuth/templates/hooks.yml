@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ .Release.Name }}-danswer-cleanup
+  name: {{ .Release.Name }}-danswer-fixup
   namespace: {{ .Release.Name }}
   annotations:
     # Need to keep around for post-delete hooks
@@ -23,11 +23,25 @@ rules:
   verbs:
   - get
   - patch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployment
+  verbs:
+  - get
+  - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ .Release.Name }}-danswer-cleanup
+  name: {{ .Release.Name }}-danswer-fixup
   namespace: {{ .Release.Name }}
   annotations:
     # Need to keep around for post-delete hooks
@@ -35,7 +49,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ .Release.Name }}-danswer-cleanup
+  name: {{ .Release.Name }}-danswer-fixup
 subjects:
 - kind: ServiceAccount
   name: default
