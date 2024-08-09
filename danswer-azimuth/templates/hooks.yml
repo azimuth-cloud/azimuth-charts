@@ -65,9 +65,7 @@ spec:
         - pvc
         - --all
       restartPolicy: Never
-      # TODO: Is there a better service account to use with profile delete permissions?
-      #       It seems that kubeflow-namespaced SAs can't reach the kube-api-server and
-      #       other SAs in default/kube-system NS can't delete profile resources
+      # TODO: Create a separate service account
       serviceAccountName: default
 ---
 # Until https://github.com/unoplat/vespa-helm-charts/pull/23
@@ -98,7 +96,5 @@ spec:
         - -p
         - {{ printf "{'spec':{'template':{'metadata':{'labels':{'app.kubernetes.io/instance':'%s'}}}}}" .Release.Name | replace "'" "\"" | squote }}
       restartPolicy: Never
-      # TODO: Is there a better service account to use with profile delete permissions?
-      #       It seems that kubeflow-namespaced SAs can't reach the kube-api-server and
-      #       other SAs in default/kube-system NS can't delete profile resources
+      # TODO: Create a separate service account
       serviceAccountName: default
