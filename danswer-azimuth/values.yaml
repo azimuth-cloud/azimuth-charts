@@ -15,6 +15,12 @@ danswer-stack:
     service:
       type: ClusterIP
   vespa:
+    # Workaround https://github.com/unoplat/vespa-helm-charts/issues/20
+    # until https://github.com/unoplat/vespa-helm-charts/pull/23 is
+    # merged.
+    podLabels:
+      app: vespa
+      app.kubernetes.io/instance: danswer
     service:
       type: ClusterIP
     volumeClaimTemplates:
@@ -26,4 +32,3 @@ danswer-stack:
           resources:
             requests:
               storage: *vespa-capacity
-
