@@ -6,7 +6,7 @@ zenithClient:
 vespaVolumeSize: &vespa-capacity 10Gi
 
 danswer-stack:
-  appVersionOverride: v0.3.85
+  # appVersionOverride: v0.3.85 # Works
   configMap:
     AUTH_TYPE: basic
     DISABLE_TELEMETRY: true
