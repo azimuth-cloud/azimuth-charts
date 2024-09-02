@@ -15,7 +15,7 @@ icon: https://raw.githubusercontent.com/danswer-ai/danswer/1fabd9372d66cd5423884
 # plus the Zenith X-Remote-User integration.
 dependencies:
   - name: danswer-stack
-    version: 0.5.10-stackhpc.1
+    version: 0.5.10-remote-user-header.1
     repository: https://stackhpc.github.io/danswer
 
 annotations:
