@@ -5,9 +5,33 @@ zenithClient:
 
 argo-cd:
   configs:
+    cm:
+      # Configure authentication via the Zenith remote-user header
+      admin.enabled: false
+      dex.config: |
+        connectors:
+          - type: authproxy
+            id: zenith-remote-user
+            name: Zenith Remote User
+            config:
+              userIdHeader: X-Remote-User-Id
+              userHeader: X-Remote-User
+              emailHeader: X-Remote-User-Email
+              groupHeader: X-Remote-Group
+      # Disable anonymous auth
+      users.anonymous.enabled: false
+      users.session.duration: 15m
+    rbac:
+      scopes: '[groups]'
+      # Grant the admin role to platform admins
+      policy.csv: |
+        g, /admins, role:admin
+      # Grant the readonly role to all authenticated users
+      policy.default: role:readonly
     params:
+      # Zenith will handle the TLS termination
       server.insecure: true
-      server.disable.auth: true
+      server.disable.auth: false
   crds:
     # CRDs should be uninstalled as part of Helm chart
     keep: false
