@@ -46,9 +46,42 @@
                                 }
                             },
                             "required": ["capacity"]
+                        },
+                        "image": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "title": "Image Name",
+                                    "description": "The notebook image to use.",
+                                    "default": "quay.io/jupyter/minimal-notebook"
+                                },
+                                "tag": {
+                                    "type": "string",
+                                    "title": "Image Tag",
+                                    "description": "The notebook image tag to use.",
+                                    "default": "2024-08-05"
+                                }
+                            },
+                            "required": ["name", "tag"]
+                        },
+                        "extraResource": {
+                            "type": "object",
+                            "properties": {
+                                "limits": {
+                                    "type": "object",
+                                    "properties": {
+                                        "nvidia.com/gpu": {
+                                            "type": "string",
+                                            "title": "GPU Count",
+                                            "description": "Number of MIG GPUs per notebook"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     },
-                    "required": ["cpu", "memory", "storage"]
+                    "required": ["cpu", "memory", "storage", "image"]
                 }
             },
             "required": ["singleuser"]
