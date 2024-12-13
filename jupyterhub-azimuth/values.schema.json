@@ -75,7 +75,7 @@
                                             "type": "integer",
                                             "title": "Notebook GPUs",
                                             "description": "Number of MIG GPUs per notebook",
-                                            "default": "0"
+                                            "default": 0
                                         }
                                     }
                                 }
