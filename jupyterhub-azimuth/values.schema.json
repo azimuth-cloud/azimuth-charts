@@ -72,9 +72,10 @@
                                     "type": "object",
                                     "properties": {
                                         "nvidia.com/gpu": {
-                                            "type": "string",
-                                            "title": "GPU Count",
-                                            "description": "Number of MIG GPUs per notebook"
+                                            "type": "integer",
+                                            "title": "Notebook GPUs",
+                                            "description": "Number of MIG GPUs per notebook",
+                                            "default": "0"
                                         }
                                     }
                                 }
