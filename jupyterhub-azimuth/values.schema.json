@@ -71,7 +71,7 @@
                                 "limits": {
                                     "type": "object",
                                     "properties": {
-                                        "nvidia.com/gpu": {
+                                        "nvidia.com\/gpu": {
                                             "type": "integer",
                                             "title": "Notebook GPUs",
                                             "description": "Number of MIG GPUs per notebook",
