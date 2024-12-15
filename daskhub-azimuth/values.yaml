@@ -19,6 +19,10 @@ daskhub:
               String("image", default="pangeo/base-notebook:2022.05.10", label="Image"),
               handler=option_handler,
           )
+    # Use stackhpc's ghcr image copy
+    traefik:
+      image: 
+        name: ghcr.io/stackhpc/azimuth-charts/docker.io/library/traefik
 
   jupyterhub:
     prePuller:
@@ -37,10 +41,16 @@ daskhub:
       service:
         type: ClusterIP
       chp:
+        # Use stackhpc's ghcr image copy
+        image:
+          name: ghcr.io/stackhpc/azimuth-charts/docker.io/jupyterhub/configurable-http-proxy
         networkPolicy:
           enabled: false
 
     hub:
+      # Use stackhpc's ghcr image copy
+      image:
+        name: ghcr.io/stackhpc/azimuth-charts/docker.io/jupyterhub/k8s-hub
       networkPolicy:
         enabled: false
       # Configure the authentication to respect the X-Remote-User header sent by Zenith from Azimuth
@@ -86,6 +96,9 @@ daskhub:
           c.JupyterHub.authenticator_class = RemoteUserAuthenticator
 
     singleuser:
+      # Use stackhpc's ghcr image copy
+      image:
+        name: ghcr.io/stackhpc/azimuth-charts/docker.io/pangeo/base-notebook
       networkPolicy:
         enabled: false
       defaultUrl: /lab
