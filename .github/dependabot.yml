@@ -10,6 +10,10 @@ updates:
     schedule:
       interval: "weekly"
   - package-ecosystem: "helm"
-    directory: "/"
+    directories:
+    - "/argocd-azimuth"
+    - "/binderhub-azimuth"
+    - "/daskhub-azimuth"
+    - "/jupyterhub-azimuth"
     schedule:
       interval: "weekly"
