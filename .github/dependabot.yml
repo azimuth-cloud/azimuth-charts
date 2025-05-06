@@ -12,7 +12,12 @@ updates:
   - package-ecosystem: "helm"
     directories:
     - "/argocd-azimuth"
-    - "/binderhub-azimuth"
+    # NOTE(sd109): BinderHub update doesn't work as of 2025-05-06.
+    # See failed workflow:
+    # https://github.com/azimuth-cloud/azimuth-charts/actions/runs/14863837842/job/41735465372
+    # Possibly because there's still no stable BinderHub chart version?
+    # Version list: https://hub.jupyter.org/helm-chart/
+    # - "/binderhub-azimuth"
     - "/daskhub-azimuth"
     - "/jupyterhub-azimuth"
     schedule:
