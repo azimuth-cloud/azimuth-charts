@@ -5,6 +5,10 @@ jobs:
   publish_charts:
     name: Build and push Helm charts
     runs-on: ubuntu-latest
+    permissions:
+      # Explicit permissions are required for
+      # PRs created by dependabot user
+      contents: write
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
