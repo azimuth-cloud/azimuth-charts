@@ -1,0 +1,18 @@
+apiVersion: v2
+name: slinky-azimuth
+description: An Slinky environment for GitOps-based management of applications deployed on Kubernetes.
+type: application
+version: 0.1.0
+appVersion: 0.1.0
+icon: https://raw.githubusercontent.com/SchedMD/slurm/master/doc/html/slurm_logo.png
+
+dependencies:
+  - name: slurm-operator
+    version: 0.3.0
+    repository: oci://ghcr.io/slinkyproject/charts/slurm-operator
+  - name: slurm
+    version: 0.3.0
+    repository: oci://ghcr.io/slinkyproject/charts/slurm
+
+annotations:
+  azimuth.stackhpc.com/label: Slinky

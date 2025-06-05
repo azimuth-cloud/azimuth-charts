@@ -1,0 +1,13 @@
+zenithClient:
+  iconUrl: https://raw.githubusercontent.com/SchedMD/slurm/master/doc/html/slurm_logo.png
+  description:
+  label: "Slinky"
+
+argo-cd:
+  configs:
+    params:
+      server.insecure: true
+      server.disable.auth: true
+  crds:
+    # CRDs should be uninstalled as part of Helm chart
+    keep: false
