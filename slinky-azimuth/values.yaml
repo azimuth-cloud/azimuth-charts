@@ -3,11 +3,6 @@ zenithClient:
   description:
   label: "Slinky"
 
-argo-cd:
-  configs:
-    params:
-      server.insecure: true
-      server.disable.auth: true
-  crds:
-    # CRDs should be uninstalled as part of Helm chart
-    keep: false
+slurm-operator:
+  certManager:
+    enabled: false # TODO: Do we need this?
