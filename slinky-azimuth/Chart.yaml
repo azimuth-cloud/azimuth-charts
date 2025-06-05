@@ -8,11 +8,11 @@ icon: https://raw.githubusercontent.com/SchedMD/slurm/master/doc/html/slurm_logo
 
 dependencies:
   - name: slurm-operator
-    version: 0.3.0
-    repository: oci://ghcr.io/slinkyproject/charts/slurm-operator
+    version: 0.2.1
+    repository: oci://ghcr.io/slinkyproject/charts
   - name: slurm
-    version: 0.3.0
-    repository: oci://ghcr.io/slinkyproject/charts/slurm
+    version: 0.2.1
+    repository: oci://ghcr.io/slinkyproject/charts
 
 annotations:
   azimuth.stackhpc.com/label: Slinky
