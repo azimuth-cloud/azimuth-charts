@@ -10,9 +10,16 @@ dependencies:
   - name: slurm-operator
     version: 0.2.1
     repository: oci://ghcr.io/slinkyproject/charts
+    # version: ">=0-0"
+    # repository: file://./slurm-operator/helm/slurm-operator
   - name: slurm
     version: 0.2.1
     repository: oci://ghcr.io/slinkyproject/charts
+    # version: ">=0-0"
+    # repository: file://./slurm-operator/helm/slurm
+  - name: cert-manager
+    version: 1.17.2
+    repository: https://charts.jetstack.io
 
 annotations:
   azimuth.stackhpc.com/label: Slinky
