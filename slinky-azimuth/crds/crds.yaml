@@ -6,7 +6,8 @@
 # in Azimuth.
 #
 # Generated using:
-# helm template foo slinky-azimuth | yq 'select(.kind == "CustomResourceDefinition")' > slinky-azimuth/crds/crds.yaml
+# helm template foo slinky-azimuth --set "cert-manager.crds.enabled=true" \
+# | yq 'select(.kind == "CustomResourceDefinition")' > slinky-azimuth/crds/crds.yaml
 #
 # Source: slinky-azimuth/charts/cert-manager/templates/crds.yaml
 #
