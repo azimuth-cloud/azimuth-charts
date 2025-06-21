@@ -1,6 +1,7 @@
 */charts/*
 */Chart.lock
+.vscode
 # Ignore `helm dependency build` output
-kubeflow-azimuth/kubeflow-azimuth-chart/**
-kubeflow-azimuth/kubeflow-crds/**
+kubeflow-azimuth/kubeflow-azimuth-chart
+kubeflow-azimuth/kubeflow-crds
 kubeflow-azimuth/kustomize-build-output.yml
