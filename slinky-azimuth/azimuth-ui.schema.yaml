@@ -1,0 +1,14 @@
+controls:
+  # Render the memory and storage controls as number fields with a unit
+  /jupyterhub/singleuser/memory/limit:
+    type: NumberWithUnitsControl
+    units: G
+    minimum: 1
+    step: 1
+    displayUnits: GB
+  /jupyterhub/singleuser/storage/capacity:
+    type: NumberWithUnitsControl
+    units: Gi
+    minimum: 1
+    step: 1
+    displayUnits: GB

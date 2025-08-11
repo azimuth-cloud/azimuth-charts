@@ -1,0 +1,33 @@
+--- 
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cert-manager
+  namespace: {{ .Values.namespace.sources }}
+spec:
+  targetNamespace: cert-manager
+  kubeConfig:
+    secretRef:
+      name: {{ .Values.kubeconfig.name}}
+      key: {{ .Values.kubeconfig.key}}
+  interval: 10m
+  timeout: 5m
+  chart:
+    spec:
+      chart: cert-manager
+      sourceRef:
+        kind: HelmRepository
+        name: jetstack-charts
+        namespace: {{ .Values.namespace.sources }}
+      interval: 5m
+  install:
+    remediation:
+      retries: 3
+    createNamespace: true
+  upgrade:
+    remediation:
+      retries: 3
+  driftDetection:
+    mode: enabled
+  values:
+    installCRDs: true

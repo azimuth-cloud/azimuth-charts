@@ -1,0 +1,43 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: slurm-operator
+  namespace: {{ .Values.namespace.sources }}
+spec:
+  targetNamespace: {{ .Values.namespace.slurmOperator }}
+  kubeConfig:
+    secretRef:
+      name: {{ .Values.kubeconfig.name}}
+      key: {{ .Values.kubeconfig.key}}
+  chart:
+    spec:
+      chart: slurm-operator
+      sourceRef:
+        kind: HelmRepository
+        name: slurm-operator-repo
+        namespace: {{ .Values.namespace.sources }}
+      # version: ">0.1.0-dev.0.main.0"
+      version: ">0.1.0-dev.0.stackhpc-0-3-0.0"
+  # chartRef:
+  #   kind: OCIRepository
+  #   name: slurm-operator-repo
+  dependsOn:
+    - name: cert-manager
+      namespace: {{ .Values.namespace.sources }}
+  install:
+    createNamespace: true
+    remediation:
+      retries: -1
+  upgrade:
+    remediation:
+      retries: -1
+  interval: 5m
+  timeout: 5m
+  values:
+    operator:
+      image:
+        tag: "0.3.0"
+    webhook:
+      image:
+        tag: "0.3.0"

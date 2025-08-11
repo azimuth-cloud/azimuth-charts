@@ -1,0 +1,20 @@
+# Default values for slinky-helm.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace:
+  sources: "flux"
+  slurmOperator: "slinky"
+  slurm: "slurm"
+
+kubeconfig:
+  name: "cilium-slinky-kubeconfig"
+  key: ""
+
+# This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+# autoscaling:
+#   enabled: false
+#   minReplicas: 1
+#   maxReplicas: 10
+#   targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
