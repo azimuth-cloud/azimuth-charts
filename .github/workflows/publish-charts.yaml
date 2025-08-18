@@ -46,7 +46,7 @@ jobs:
           tags: ${{ steps.image-meta.outputs.tags }}
           labels: ${{ steps.image-meta.outputs.labels }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-
+#test
   publish_charts:
     name: Build and push Helm charts
     runs-on: ubuntu-latest
