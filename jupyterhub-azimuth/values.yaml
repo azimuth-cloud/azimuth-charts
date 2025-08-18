@@ -36,7 +36,7 @@ user_profile_values:
 conditions:
   device_id_intel_gpu: "gpu.intel.com/device-id.0380-0bd5"
   nvidia_gpu: "nvidia.com/gpu"
-  
+#test
 jupyterhub:
   prePuller:
     hook:
