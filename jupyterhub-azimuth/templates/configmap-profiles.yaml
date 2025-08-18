@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jupyterhub-profile-config
+  labels:
+    app: jupyterhub
+data:
+  profiles.py: |
+{{ tpl (.Files.Get "profiles/custom_profiles.py") . | indent 4 }}
+
