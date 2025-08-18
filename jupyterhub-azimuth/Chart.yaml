@@ -9,6 +9,8 @@ keywords: [jupyter, jupyterhub]
 
 dependencies:
   - name: jupyterhub
+    # Remember to update jupyterhub Dockerfile k8s-hub version at
+    # images/jupyterhub/k8s-hub/Dockerfile when updating JH version here
     version: 4.2.0
     repository: https://jupyterhub.github.io/helm-chart/
 

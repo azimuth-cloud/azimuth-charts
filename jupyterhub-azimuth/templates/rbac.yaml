@@ -1,0 +1,26 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  # Ensure cluster-scoped resource's name is unique by using appropriate suffix
+  name: jupyterhub-node-{{ .Release.Namespace }}-{{ .Release.Name }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: jupyterhub-node-{{ .Release.Namespace }}-{{ .Release.Name }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: jupyterhub-node-{{ .Release.Namespace }}-{{ .Release.Name }}
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.jupyterhub.hub.serviceAccount.name | default "hub" }}
+  namespace: {{ .Release.Namespace }}
