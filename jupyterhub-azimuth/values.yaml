@@ -73,7 +73,6 @@ jupyterhub:
         import sys
         sys.path.append("/etc/jupyterhub/custom")
         from profiles import get_profile_list
-        c.JupyterHub.spawner_class = 'kubespawner.KubeSpawner'
         c.KubeSpawner.debug = True
         c.KubeSpawner.profile_list = get_profile_list
 
