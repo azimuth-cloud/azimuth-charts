@@ -28,10 +28,10 @@ spec:
   install:
     createNamespace: true
     remediation:
-      retries: 0
+      retries: -1
   upgrade:
     remediation:
-      retries: 0
+      retries: -1
   interval: 11m
   timeout: 10m
   driftDetection:
