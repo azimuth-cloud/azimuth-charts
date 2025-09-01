@@ -2,6 +2,8 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  # Azimuth creates a namespace per app, so using namespace suffix ensures 
+  # unique cluster-scoped resource names
   name: jupyterhub-node-{{ .Release.Namespace }}
 rules:
 - apiGroups:

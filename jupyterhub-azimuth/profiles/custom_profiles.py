@@ -1,6 +1,6 @@
 import logging
 from kubernetes import client, config
-import os,yaml
+import os, yaml
 
 def get_profile_list(spawner):
     logging.warning("Loading custom profiles for JupyterHub.")
@@ -13,9 +13,13 @@ def get_profile_list(spawner):
         },
     ]
 
+    # Include any custom profiles provided via Helm values
     custom_profiles = yaml.safe_load("""\n{{ .Values.user_profile_values.custom_profile | toYaml }}""")
     if custom_profiles:
         profiles.extend(custom_profiles)
+    
+    # Check for certain types of specialised hardware on the host cluster (e.g. GPUs) 
+    # and add some appropriate notebook profiles
     config.load_incluster_config()
     api = client.CoreV1Api()
     nodes = api.list_node().items
@@ -35,6 +39,6 @@ def get_profile_list(spawner):
         profiles.extend(yaml.safe_load("""\n{{ .Values.user_profile_values.intel_gpu | toYaml }}"""))
     else:
         logging.warning("No Intel GPU nodes found, skipping profile.")    
-    logging.warning(f"Available profiles: {[profile['display_name'] for profile in profiles]}")
+    logging.info(f"Available profiles: {[profile.get('display_name', 'unknown') for profile in profiles]}")
 
     return profiles
