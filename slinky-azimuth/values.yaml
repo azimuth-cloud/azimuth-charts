@@ -1,9 +1,8 @@
 # Default values for slinky-helm.
 
 namespace:
-  sources: "flux"
-  slurmOperator: "slinky"
-  slurm: "slurm"
+  flux: "flux"
+  deployment: "slinky"
 
 kubeconfig:
   name: "cilium-slinky-kubeconfig"

@@ -3,9 +3,9 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: slurm-operator
-  namespace: {{ .Values.namespace.sources }}
+  namespace: {{ .Values.namespace.flux }}
 spec:
-  targetNamespace: {{ .Values.namespace.slurmOperator }}
+  targetNamespace: {{ .Values.namespace.deployment }}
   kubeConfig:
     secretRef:
       name: {{ .Values.kubeconfig.name}}
@@ -16,7 +16,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: slurm-operator-repo
-        namespace: {{ .Values.namespace.sources }}
+        namespace: {{ .Values.namespace.flux }}
       # version: ">0.1.0-dev.0.main.0"
       version: ">0.1.0-dev.0.stackhpc-0-3-0.0"
   # chartRef:
@@ -24,7 +24,7 @@ spec:
   #   name: slurm-operator-repo
   dependsOn:
     - name: cert-manager
-      namespace: {{ .Values.namespace.sources }}
+      namespace: {{ .Values.namespace.flux }}
   install:
     createNamespace: true
     remediation:
