@@ -3,12 +3,8 @@ zenithClient:
   description:
   label: "Jupyter Notebook"
 
-user_notebook_profiles:
-  default_profiles:
-    - display_name: "Minimal environment"
-      description: "To avoid too much bells and whistles: Python."
-      slug: "minimal"
-      default: true
+user_profile_values:
+  custom_profile:
     - display_name: "Datascience environment"
       description: "If you want the additional bells and whistles: Python, R, and Julia."
       slug: "datascience"
@@ -40,7 +36,7 @@ user_notebook_profiles:
 conditions:
   device_id_intel_gpu: "gpu.intel.com/device-id.0380-0bd5"
   nvidia_gpu: "nvidia.com/gpu"
-#test
+  
 jupyterhub:
   prePuller:
     hook:
@@ -61,7 +57,7 @@ jupyterhub:
       enabled: false
     image:
       name: ghcr.io/azimuth-cloud/azimuth-jupyterhub-k8s-hub
-      tag: latest
+      tag: profile-list
       pullPolicy: IfNotPresent
     extraVolumes:
       - name: jupyterhub-profile-config
@@ -73,14 +69,15 @@ jupyterhub:
         readOnly: true
         
     extraConfig:
-      load-profiles.py: |
+      12-load-profiles.py: |
         import sys
         sys.path.append("/etc/jupyterhub/custom")
         from profiles import get_profile_list
+        c.KubeSpawner.debug = True
         c.KubeSpawner.profile_list = get_profile_list
 
       # Configure the authentication to respect the X-Remote-User header sent by Zenith from Azimuth
-      remoteuser.py: |
+      10-remoteuser.py: |
         from jupyterhub.auth import Authenticator
         from jupyterhub.handlers import BaseHandler
 

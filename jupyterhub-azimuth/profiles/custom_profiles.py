@@ -3,11 +3,17 @@ from kubernetes import client, config
 import os,yaml
 
 def get_profile_list(spawner):
-    logging.info("Loading custom profiles for JupyterHub.")
-    profiles = []
+    logging.warning("Loading custom profiles for JupyterHub.")
+    profiles = [
+        {
+            "display_name": "Minimal environment",
+            "description": "To avoid too much bells and whistles: Python.",
+            "slug": "minimal",
+            "default": True,
+        },
+    ]
 
-    # Include any custom profiles provided via Helm values
-    custom_profiles = yaml.safe_load("""\n{{ .Values.user_notebook_profiles.default_profiles | toYaml }}""")
+    custom_profiles = yaml.safe_load("""\n{{ .Values.user_profile_values.custom_profile | toYaml }}""")
     if custom_profiles:
         profiles.extend(custom_profiles)
     config.load_incluster_config()
@@ -23,12 +29,12 @@ def get_profile_list(spawner):
     if any(map(has_nvidia_gpu, nodes)):
         profiles.extend(yaml.safe_load("""\n{{ .Values.user_profile_values.nvidia_gpu | toYaml }}"""))
     else:
-        logging.info("No Nvidia GPU nodes found, skipping Pytorch Nvidia GPU profile.")
+        logging.warning("No Nvidia GPU nodes found, skipping Pytorch Nvidia GPU profile.")
 
     if any(map(has_intel_gpu, nodes)):
         profiles.extend(yaml.safe_load("""\n{{ .Values.user_profile_values.intel_gpu | toYaml }}"""))
     else:
-        logging.info("No Intel GPU nodes found, skipping profile.")    
-    logging.info(f"Available profiles: {[profile.get('display_name', 'unknown') for profile in profiles]}")
+        logging.warning("No Intel GPU nodes found, skipping profile.")    
+    logging.warning(f"Available profiles: {[profile['display_name'] for profile in profiles]}")
 
     return profiles
