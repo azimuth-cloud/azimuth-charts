@@ -4,14 +4,7 @@ import os,yaml
 
 def get_profile_list(spawner):
     logging.warning("Loading custom profiles for JupyterHub.")
-    profiles = [
-        {
-            "display_name": "Minimal environment",
-            "description": "To avoid too much bells and whistles: Python.",
-            "slug": "minimal",
-            "default": True,
-        },
-    ]
+    profiles = []
 
     custom_profiles = yaml.safe_load("""\n{{ .Values.user_profile_values.custom_profile | toYaml }}""")
     if custom_profiles:

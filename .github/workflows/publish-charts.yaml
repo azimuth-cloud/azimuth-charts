@@ -45,7 +45,6 @@ jobs:
           push: true
           tags: ${{ steps.image-meta.outputs.tags }}
           labels: ${{ steps.image-meta.outputs.labels }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   publish_charts:
     name: Build and push Helm charts

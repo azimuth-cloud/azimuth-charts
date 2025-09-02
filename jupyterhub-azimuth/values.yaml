@@ -5,6 +5,10 @@ zenithClient:
 
 user_profile_values:
   custom_profile:
+    - display_name: "Minimal environment"
+      description: "To avoid too much bells and whistles: Python."
+      slug: "minimal"
+      default: true
     - display_name: "Datascience environment"
       description: "If you want the additional bells and whistles: Python, R, and Julia."
       slug: "datascience"
