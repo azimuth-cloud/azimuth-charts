@@ -59,7 +59,7 @@ jupyterhub:
       enabled: false
     image:
       name: ghcr.io/azimuth-cloud/azimuth-jupyterhub-k8s-hub
-      tag: profile_list
+      tag: test-branch
     extraVolumes:
       - name: jupyterhub-profile-config
         configMap:
