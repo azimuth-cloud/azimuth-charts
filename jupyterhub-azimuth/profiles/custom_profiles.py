@@ -1,6 +1,6 @@
 import logging
 from kubernetes import client, config
-import os,yaml
+import os, yaml
 
 def get_profile_list(spawner):
     logging.warning("Loading custom profiles for JupyterHub.")
