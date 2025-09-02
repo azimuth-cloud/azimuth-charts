@@ -6,12 +6,8 @@ def get_profile_list(spawner):
     logging.info("Loading custom profiles for JupyterHub.")
     profiles = []
 
-<<<<<<< HEAD
-    custom_profiles = yaml.safe_load("""\n{{ .Values.user_profile_values.custom_profile | toYaml }}""")
-=======
     # Include any custom profiles provided via Helm values
     custom_profiles = yaml.safe_load("""\n{{ .Values.user_notebook_profiles.default_profiles | toYaml }}""")
->>>>>>> fd1a2cc (Making review changes to files)
     if custom_profiles:
         profiles.extend(custom_profiles)
     config.load_incluster_config()
@@ -32,12 +28,7 @@ def get_profile_list(spawner):
     if any(map(has_intel_gpu, nodes)):
         profiles.extend(yaml.safe_load("""\n{{ .Values.user_profile_values.intel_gpu | toYaml }}"""))
     else:
-<<<<<<< HEAD
-        logging.warning("No Intel GPU nodes found, skipping profile.")    
-    logging.warning(f"Available profiles: {[profile['display_name'] for profile in profiles]}")
-=======
         logging.info("No Intel GPU nodes found, skipping profile.")    
     logging.info(f"Available profiles: {[profile.get('display_name', 'unknown') for profile in profiles]}")
->>>>>>> fd1a2cc (Making review changes to files)
 
     return profiles

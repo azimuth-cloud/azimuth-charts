@@ -77,11 +77,6 @@ jupyterhub:
         import sys
         sys.path.append("/etc/jupyterhub/custom")
         from profiles import get_profile_list
-<<<<<<< HEAD
-        c.JupyterHub.spawner_class = 'kubespawner.KubeSpawner'
-        c.KubeSpawner.debug = True
-=======
->>>>>>> fd1a2cc (Making review changes to files)
         c.KubeSpawner.profile_list = get_profile_list
 
       # Configure the authentication to respect the X-Remote-User header sent by Zenith from Azimuth
