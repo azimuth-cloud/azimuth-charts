@@ -61,8 +61,7 @@ jupyterhub:
       enabled: false
     image:
       name: ghcr.io/azimuth-cloud/azimuth-jupyterhub-k8s-hub
-      tag: profile-list
-      pullPolicy: IfNotPresent
+      tag: latest
     extraVolumes:
       - name: jupyterhub-profile-config
         configMap:
@@ -73,15 +72,14 @@ jupyterhub:
         readOnly: true
         
     extraConfig:
-      12-load-profiles.py: |
+      load-profiles.py: |
         import sys
         sys.path.append("/etc/jupyterhub/custom")
         from profiles import get_profile_list
-        c.KubeSpawner.debug = True
         c.KubeSpawner.profile_list = get_profile_list
 
       # Configure the authentication to respect the X-Remote-User header sent by Zenith from Azimuth
-      10-remoteuser.py: |
+      remoteuser.py: |
         from jupyterhub.auth import Authenticator
         from jupyterhub.handlers import BaseHandler
 
