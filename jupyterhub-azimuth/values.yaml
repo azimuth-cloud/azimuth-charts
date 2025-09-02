@@ -19,28 +19,26 @@ user_notebook_profiles:
       slug: "pytorch-cpu"
       kubespawner_override:
         image: "quay.io/jupyter/pytorch-notebook:pytorch-2.4.0"
-  nvidia_gpu:
-    - display_name: "Pytorch environment (Nvidia GPU)"
-      description: "The official Jupyter Pytorch + CUDA image. Requires a GPU compatible notebook server."
-      slug: "pytorch-nvidia-gpu"
-      kubespawner_override:
-        image: "quay.io/jupyter/pytorch-notebook:cuda12-pytorch-2.4.0"
-        extra_resource_limits:
-          nvidia.com/gpu: "1"
-  intel_gpu:
-    - display_name: "Pytorch environment (Intel GPU)"
-      description: "A Jupyter + Intel Pytorch image. Requires a GPU compatible notebook server."
-      slug: "pytorch-intel-gpu"
-      kubespawner_override:
-        image: "ghcr.io/stackhpc/jupyterhub-pytorch-intel-gpu:v0.0.1"
-        extra_resource_limits: 
-          gpu.intel.com/i915: "1"
-        supplemental_gids:
-          - "110"
-conditions:
-  device_id_intel_gpu: "gpu.intel.com/device-id.0380-0bd5"
-  nvidia_gpu: "nvidia.com/gpu"
-  
+  custom_profiles:
+    nvidia.com/gpu.present:
+      - display_name: "Pytorch environment (Nvidia GPU)"
+        description: "The official Jupyter Pytorch + CUDA image. Requires a GPU compatible notebook server."
+        slug: "pytorch-nvidia-gpu"
+        kubespawner_override:
+          image: "quay.io/jupyter/pytorch-notebook:cuda12-pytorch-2.4.0"
+          extra_resource_limits:
+            nvidia.com/gpu: "1"
+    gpu.intel.com/device-id.0380-0bd5.present:
+      - display_name: "Pytorch environment (Intel GPU)"
+        description: "A Jupyter + Intel Pytorch image. Requires a GPU compatible notebook server."
+        slug: "pytorch-intel-gpu"
+        kubespawner_override:
+          image: "ghcr.io/stackhpc/jupyterhub-pytorch-intel-gpu:v0.0.1"
+          extra_resource_limits: 
+            gpu.intel.com/i915: "1"
+          supplemental_gids:
+            - "110"
+
 jupyterhub:
   prePuller:
     hook:
