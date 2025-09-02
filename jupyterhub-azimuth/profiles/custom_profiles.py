@@ -6,7 +6,7 @@ def get_profile_list(spawner):
     logging.warning("Loading custom profiles for JupyterHub.")
     profiles = []
 
-    custom_profiles = yaml.safe_load("""\n{{ .Values.user_profile_values.custom_profile | toYaml }}""")
+    custom_profiles = yaml.safe_load("""\n{{ .Values.user_notebook_profiles.default_profiles | toYaml }}""")
     if custom_profiles:
         profiles.extend(custom_profiles)
     config.load_incluster_config()
@@ -20,12 +20,12 @@ def get_profile_list(spawner):
     has_intel_gpu = lambda node: node.metadata.labels.get(device_id_intel_gpu, "") == "true"
 
     if any(map(has_nvidia_gpu, nodes)):
-        profiles.extend(yaml.safe_load("""\n{{ .Values.user_profile_values.nvidia_gpu | toYaml }}"""))
+        profiles.extend(yaml.safe_load("""\n{{ .Values.user_notebook_profiles.nvidia_gpu | toYaml }}"""))
     else:
         logging.warning("No Nvidia GPU nodes found, skipping Pytorch Nvidia GPU profile.")
 
     if any(map(has_intel_gpu, nodes)):
-        profiles.extend(yaml.safe_load("""\n{{ .Values.user_profile_values.intel_gpu | toYaml }}"""))
+        profiles.extend(yaml.safe_load("""\n{{ .Values.user_notebook_profiles.intel_gpu | toYaml }}"""))
     else:
         logging.warning("No Intel GPU nodes found, skipping profile.")    
     logging.warning(f"Available profiles: {[profile['display_name'] for profile in profiles]}")

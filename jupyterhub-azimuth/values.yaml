@@ -3,8 +3,8 @@ zenithClient:
   description:
   label: "Jupyter Notebook"
 
-user_profile_values:
-  custom_profile:
+user_notebook_profiles:
+  default_profiles:
     - display_name: "Minimal environment"
       description: "To avoid too much bells and whistles: Python."
       slug: "minimal"
