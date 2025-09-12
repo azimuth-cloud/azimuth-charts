@@ -1,12 +1,10 @@
 # Default values for slinky-helm.
 
-namespace:
-  flux: "flux"
-  deployment: "slinky"
+targetNamespace: default
 
 kubeconfig:
-  name: "cilium-slinky-kubeconfig"
-  key: ""
+  # name:
+  # key:
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 # autoscaling:

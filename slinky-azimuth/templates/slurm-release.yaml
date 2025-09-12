@@ -3,9 +3,9 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: slurm
-  namespace: {{ .Values.namespace.flux }}
 spec:
-  targetNamespace: {{ .Values.namespace.deployment }}
+  targetNamespace: {{ .Values.targetNamespace }}
+  storageNamespace: {{ .Values.targetNamespace }}
   kubeConfig:
     secretRef:
       name: {{ .Values.kubeconfig.name}}
@@ -16,15 +16,9 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: slurm-operator-repo
-        namespace: {{ .Values.namespace.flux }}
-      # version: ">0.1.0-dev.0.main.0"
       version: ">0.1.0-dev.0.stackhpc-0-3-0.0"
-  # chartRef:
-  #   kind: OCIRepository
-  #   name: slurm-cluster-repo
   dependsOn:
     - name: slurm-operator
-      namespace: {{ .Values.namespace.flux }}
   install:
     createNamespace: true
     remediation:
@@ -36,11 +30,3 @@ spec:
   timeout: 10m
   driftDetection:
     mode: disabled
-  # values:
-    # mariadb:
-    #   primary:
-    #     persistence:
-    #       storageClass: "csi-cinder"
-    # controller:
-    #   persistence:
-    #     storageClass: "csi-cinder"
