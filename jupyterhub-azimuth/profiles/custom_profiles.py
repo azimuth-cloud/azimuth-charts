@@ -16,9 +16,11 @@ def get_profile_list(spawner):
 
     custom_profile = yaml.safe_load("""\n{{ .Values.user_notebook_profiles.custom_profiles | toYaml }}""")
     for label_key, profile_definition in custom_profile.items():
-        has_profile = lambda node: node.metadata.labels.get(label_key, "") == "true"
-        if any(map(has_profile, nodes)):
-            profiles.extend(profile_definition)
-            logging.info(f"Added custom profile for label {label_key}.")
+        label_value = profile_definition["label_value"]
+        extra_profiles = profile_definition["profiles"]        
+        has_node_label = lambda node: node.metadata.labels.get(label_key, "") == label_value
+        if any(map(has_node_label, nodes)):
+            profiles.extend(extra_profiles)
+            logging.info(f"Added custom profile for label {label_key} == {label_value}.")
 
     return profiles

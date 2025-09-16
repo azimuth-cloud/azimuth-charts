@@ -20,24 +20,33 @@ user_notebook_profiles:
       kubespawner_override:
         image: "quay.io/jupyter/pytorch-notebook:pytorch-2.4.0"
   custom_profiles:
+    # # Label to look for on any node in the host k8s cluster
     nvidia.com/gpu.present:
-      - display_name: "Pytorch environment (Nvidia GPU)"
-        description: "The official Jupyter Pytorch + CUDA image. Requires a GPU compatible notebook server."
-        slug: "pytorch-nvidia-gpu"
-        kubespawner_override:
-          image: "quay.io/jupyter/pytorch-notebook:cuda12-pytorch-2.4.0"
-          extra_resource_limits:
-            nvidia.com/gpu: "1"
+      # Label value to match against
+      label_value: "true"
+      # Profiles to be included if node has a matching label
+      profiles:
+        - display_name: "Pytorch environment (Nvidia GPU)"
+          description: "The official Jupyter Pytorch + CUDA image. Requires a GPU compatible notebook server."
+          slug: "pytorch-nvidia-gpu"
+          kubespawner_override:
+            image: "quay.io/jupyter/pytorch-notebook:cuda12-pytorch-2.4.0"
+            extra_resource_limits:
+              nvidia.com/gpu: "1"
     gpu.intel.com/device-id.0380-0bd5.present:
-      - display_name: "Pytorch environment (Intel GPU)"
-        description: "A Jupyter + Intel Pytorch image. Requires a GPU compatible notebook server."
-        slug: "pytorch-intel-gpu"
-        kubespawner_override:
-          image: "ghcr.io/stackhpc/jupyterhub-pytorch-intel-gpu:v0.0.1"
-          extra_resource_limits: 
-            gpu.intel.com/i915: "1"
-          supplemental_gids:
-            - "110"
+      # Label value to match against
+      label_value: "true"
+      # Profiles to be included if node has a matching label
+      profiles:    
+        - display_name: "Pytorch environment (Intel GPU)"
+          description: "A Jupyter + Intel Pytorch image. Requires a GPU compatible notebook server."
+          slug: "pytorch-intel-gpu"
+          kubespawner_override:
+            image: "ghcr.io/stackhpc/jupyterhub-pytorch-intel-gpu:v0.0.1"
+            extra_resource_limits: 
+              gpu.intel.com/i915: "1"
+            supplemental_gids:
+              - "110"
 
 jupyterhub:
   prePuller:
@@ -59,7 +68,11 @@ jupyterhub:
       enabled: false
     image:
       name: ghcr.io/azimuth-cloud/azimuth-jupyterhub-k8s-hub
+<<<<<<< Updated upstream
       tag: test-branch
+=======
+      tag: d7ff379
+>>>>>>> Stashed changes
     extraVolumes:
       - name: jupyterhub-profile-config
         configMap:
