@@ -3,10 +3,18 @@ zenithClient:
   description:
   label: "Jupyter Notebook"
 
+# Configuration of available Jupyter notebook profiles
+# https://z2jh.jupyter.org/en/stable/jupyterhub/customizing/user-environment.html#using-multiple-profiles-to-let-users-select-their-environment
+# The options here allow for dynamic profile configuration based on
+# the properties of the host k8s cluster. By default, the standard notebook
+# profiles are augmented with basic GPU-capable profiles on any cluster
+# which contains at least one (Nvidia or Intel) GPU node. The configuration
+# structure allows these profiles to be overridden or augmented with extra
+# profiles based on the host k8s cluster's node labels.
 user_notebook_profiles:
   default_profiles:
     - display_name: "Minimal environment"
-      description: "To avoid too much bells and whistles: Python."
+      description: "To avoid too many bells and whistles: Python."
       slug: "minimal"
       default: true
     - display_name: "Datascience environment"
