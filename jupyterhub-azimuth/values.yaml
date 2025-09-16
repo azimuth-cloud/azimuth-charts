@@ -27,7 +27,12 @@ user_notebook_profiles:
       slug: "pytorch-cpu"
       kubespawner_override:
         image: "quay.io/jupyter/pytorch-notebook:pytorch-2.4.0"
+<<<<<<< Updated upstream
   custom_profiles:
+=======
+  custom_profile:
+    # # Label to look for on any node in the host k8s cluster
+>>>>>>> Stashed changes
     nvidia.com/gpu.present:
       - display_name: "Pytorch environment (Nvidia GPU)"
         description: "The official Jupyter Pytorch + CUDA image. Requires a GPU compatible notebook server."
