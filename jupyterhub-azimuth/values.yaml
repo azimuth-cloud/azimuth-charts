@@ -2,7 +2,15 @@ zenithClient:
   iconUrl: https://raw.githubusercontent.com/jupyter/design/master/logos/Logo%20Mark/logomark-orangebody-greyplanets/logomark-orangebody-greyplanets.png
   description:
   label: "Jupyter Notebook"
-
+  
+# Configuration of available Jupyter notebook profiles
+# https://z2jh.jupyter.org/en/stable/jupyterhub/customizing/user-environment.html#using-multiple-profiles-to-let-users-select-their-environment
+# The options here allow for dynamic profile configuration based on
+# the properties of the host k8s cluster. By default, the standard notebook
+# profiles are augmented with basic GPU-capable profiles on any cluster
+# which contains at least one (Nvidia or Intel) GPU node. The configuration
+# structure allows these profiles to be overridden or augmented with extra
+# profiles based on the host k8s cluster's node labels.
 user_notebook_profiles:
   default_profiles:
     - display_name: "Minimal environment"
