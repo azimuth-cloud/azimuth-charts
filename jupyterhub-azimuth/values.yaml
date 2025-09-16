@@ -3,18 +3,10 @@ zenithClient:
   description:
   label: "Jupyter Notebook"
 
-# Configuration of available Jupyter notebook profiles
-# https://z2jh.jupyter.org/en/stable/jupyterhub/customizing/user-environment.html#using-multiple-profiles-to-let-users-select-their-environment
-# The options here allow for dynamic profile configuration based on
-# the properties of the host k8s cluster. By default, the standard notebook
-# profiles are augmented with basic GPU-capable profiles on any cluster
-# which contains at least one (Nvidia or Intel) GPU node. The configuration
-# structure allows these profiles to be overridden or augmented with extra
-# profiles based on the host k8s cluster's node labels.
 user_notebook_profiles:
   default_profiles:
     - display_name: "Minimal environment"
-      description: "To avoid too many bells and whistles: Python."
+      description: "To avoid too much bells and whistles: Python."
       slug: "minimal"
       default: true
     - display_name: "Datascience environment"
@@ -27,30 +19,34 @@ user_notebook_profiles:
       slug: "pytorch-cpu"
       kubespawner_override:
         image: "quay.io/jupyter/pytorch-notebook:pytorch-2.4.0"
-<<<<<<< Updated upstream
   custom_profiles:
-=======
-  custom_profile:
     # # Label to look for on any node in the host k8s cluster
->>>>>>> Stashed changes
     nvidia.com/gpu.present:
-      - display_name: "Pytorch environment (Nvidia GPU)"
-        description: "The official Jupyter Pytorch + CUDA image. Requires a GPU compatible notebook server."
-        slug: "pytorch-nvidia-gpu"
-        kubespawner_override:
-          image: "quay.io/jupyter/pytorch-notebook:cuda12-pytorch-2.4.0"
-          extra_resource_limits:
-            nvidia.com/gpu: "1"
+      # Label value to match against
+      label_value: "true"
+      # Profiles to be included if node has a matching label
+      profiles:
+        - display_name: "Pytorch environment (Nvidia GPU)"
+          description: "The official Jupyter Pytorch + CUDA image. Requires a GPU compatible notebook server."
+          slug: "pytorch-nvidia-gpu"
+          kubespawner_override:
+            image: "quay.io/jupyter/pytorch-notebook:cuda12-pytorch-2.4.0"
+            extra_resource_limits:
+              nvidia.com/gpu: "1"
     gpu.intel.com/device-id.0380-0bd5.present:
-      - display_name: "Pytorch environment (Intel GPU)"
-        description: "A Jupyter + Intel Pytorch image. Requires a GPU compatible notebook server."
-        slug: "pytorch-intel-gpu"
-        kubespawner_override:
-          image: "ghcr.io/stackhpc/jupyterhub-pytorch-intel-gpu:v0.0.1"
-          extra_resource_limits: 
-            gpu.intel.com/i915: "1"
-          supplemental_gids:
-            - "110"
+      # Label value to match against
+      label_value: "true"
+      # Profiles to be included if node has a matching label
+      profiles:    
+        - display_name: "Pytorch environment (Intel GPU)"
+          description: "A Jupyter + Intel Pytorch image. Requires a GPU compatible notebook server."
+          slug: "pytorch-intel-gpu"
+          kubespawner_override:
+            image: "ghcr.io/stackhpc/jupyterhub-pytorch-intel-gpu:v0.0.1"
+            extra_resource_limits: 
+              gpu.intel.com/i915: "1"
+            supplemental_gids:
+              - "110"
 
 jupyterhub:
   prePuller:
@@ -72,7 +68,7 @@ jupyterhub:
       enabled: false
     image:
       name: ghcr.io/azimuth-cloud/azimuth-jupyterhub-k8s-hub
-      tag: main
+      tag: d7ff379
     extraVolumes:
       - name: jupyterhub-profile-config
         configMap:
