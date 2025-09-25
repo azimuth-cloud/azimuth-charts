@@ -40,5 +40,30 @@ spec:
         - name: {{ .Values.partitionName }}
           replicas: {{ .Values.nodes }}
           enabled: true
+          imagePullPolicy: IfNotPresent
+          image:
+            repository: ""
+            tag: ""
+          priorityClassName: ""
+          nodeSelector:
+            kubernetes.io/os: linux
+          affinity: {}
+          tolerations: []
+          resources: {}
+          useResourceLimits: true
+          updateStrategy:
+            type: RollingUpdate
+            rollingUpdate:
+              maxUnavailable: 20%
+          persistentVolumeClaimRetentionPolicy:
+            whenDeleted: Retain
+            whenScaled: Retain
+          volumeClaimTemplates: []
+          extraVolumeMounts: []
+          extraVolumes: []
           partition:
             enabled: true
+            config:
+              State: UP
+              MaxTime: UNLIMITED
+          nodeConfig: {}
