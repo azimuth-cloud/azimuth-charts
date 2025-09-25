@@ -39,3 +39,4 @@ spec:
       nodesets:
         - name: {{ .Values.partitionName }}
           replicas: {{ .Values.nodes }}
+          enabled: true
