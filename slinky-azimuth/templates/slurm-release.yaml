@@ -48,7 +48,10 @@ spec:
           nodeSelector:
             kubernetes.io/os: linux
           affinity: {}
-          tolerations: []
+          tolerations:
+            - effect: "NoExecute"
+              operator: "Exists"
+              key: slinky.slurm.net/managed-node
           resources: {}
           useResourceLimits: true
           updateStrategy:
