@@ -1,5 +1,20 @@
 {
     "$schema": "http://json-schema.org/schema#",
     "type": "object",
-    "properties": {}
+    "properties": {
+        "partitionName":{
+            "type": "string",
+            "title": "Partition name",
+            "description": "Name of the Slurm partition to be created",
+            "default": "slinky"
+        },
+        "nodes": {
+            "type": "integer",
+            "title": "Compute nodes",
+            "description": "The number of nodes to spawn slurmd pods on",
+            "minimum": 1,
+            "default": 1
+        }
+    },
+    "required": ["partitionName","nodes"]
 }

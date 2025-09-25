@@ -30,3 +30,12 @@ spec:
   timeout: 10m
   driftDetection:
     mode: disabled
+  values:
+    controller:
+      extraConfMap:
+        MCSPlugin: mcs/label
+        MCSParameters: ondemand,ondemandselect
+    compute:
+      nodesets:
+        - name: {{ .Values.partitionName }}
+          replicas: {{ .Values.nodes }}
