@@ -40,3 +40,5 @@ spec:
         - name: {{ .Values.partitionName }}
           replicas: {{ .Values.nodes }}
           enabled: true
+          partition:
+            enabled: true
