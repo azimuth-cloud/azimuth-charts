@@ -1,6 +1,6 @@
 apiVersion: v2
 name: slinky-azimuth
-description: A Helm chart for Kubernetes
+description: A containerised Slurm cluster.
 icon: https://raw.githubusercontent.com/SlinkyProject/slurm-operator/main/docs/_static/images/slinky.svg
 # A chart can be either an 'application' or a 'library' chart.
 #
