@@ -28,7 +28,7 @@ user_notebook_profiles:
       kubespawner_override:
         image: "quay.io/jupyter/pytorch-notebook:pytorch-2.4.0"
   custom_profiles:
-    # # Label to look for on any node in the host k8s cluster
+    # Label to look for on any node in the host k8s cluster
     nvidia.com/gpu.present:
       # Label value to match against
       label_value: "true"
