@@ -2,7 +2,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: slurm
+  name: {{ .Release.Name }}-slurm
 spec:
   targetNamespace: {{ .Values.targetNamespace }}
   storageNamespace: {{ .Values.targetNamespace }}
@@ -18,7 +18,7 @@ spec:
         name: slurm-operator-repo
       version: ">0.1.0-dev.0.stackhpc-0-3-0.0"
   dependsOn:
-    - name: slurm-operator
+    - name: {{ .Release.Name }}-slurm-operator
   install:
     createNamespace: true
     remediation:

@@ -1,6 +1,7 @@
 apiVersion: v2
 name: slinky-azimuth
 description: A Helm chart for Kubernetes
+icon: https://raw.githubusercontent.com/SlinkyProject/slurm-operator/main/docs/_static/images/slinky.svg
 # A chart can be either an 'application' or a 'library' chart.
 #
 # Application charts are a collection of templates that can be packaged into versioned archives
