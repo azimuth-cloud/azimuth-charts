@@ -2,6 +2,7 @@ zenithClient:
   iconUrl: https://raw.githubusercontent.com/jupyter/design/master/logos/Logo%20Mark/logomark-orangebody-greyplanets/logomark-orangebody-greyplanets.png
   description:
   label: "Jupyter Notebook"
+
   
 # Configuration of available Jupyter notebook profiles
 # https://z2jh.jupyter.org/en/stable/jupyterhub/customizing/user-environment.html#using-multiple-profiles-to-let-users-select-their-environment
