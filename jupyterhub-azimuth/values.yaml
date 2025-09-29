@@ -14,7 +14,7 @@ zenithClient:
 user_notebook_profiles:
   default_profiles:
     - display_name: "Minimal environment"
-      description: "To avoid too much bells and whistles: Python."
+      description: "To avoid too many bells and whistles: Python."
       slug: "minimal"
       default: true
     - display_name: "Datascience environment"
