@@ -72,6 +72,8 @@ spec:
           extraVolumeMounts: []
           extraVolumes: []
           nodeConfig: {}
+          partition:
+            enabled: false
     partitions:
       - name: batch
         nodesets:
