@@ -31,6 +31,9 @@ spec:
   driftDetection:
     mode: disabled
   values:
+    mariadb:
+      image:
+        repository: bitnamilegacy/mariadb
     controller:
       extraConfMap:
         MCSPlugin: mcs/label
