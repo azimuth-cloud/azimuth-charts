@@ -35,9 +35,16 @@ spec:
       extraConfMap:
         MCSPlugin: mcs/label
         MCSParameters: ondemand,ondemandselect
+        SelectType: select/linear
+        SelectTypeParameter: CR_Memory
+        SchedulerType: sched/backfill
+        PreemptType: preempt/partition_prio
+        PreemptMode: SUSPEND,GANG
+        PriorityType: priority/multifactor
+        PriorityWeightPartition: 1000
     compute:
       nodesets:
-        - name: {{ .Values.partitionName }}
+        - name: compute
           replicas: {{ .Values.nodes }}
           enabled: true
           imagePullPolicy: IfNotPresent
@@ -64,9 +71,22 @@ spec:
           volumeClaimTemplates: []
           extraVolumeMounts: []
           extraVolumes: []
-          partition:
-            enabled: true
-            config:
-              State: UP
-              MaxTime: UNLIMITED
           nodeConfig: {}
+    partitions:
+      - name: batch
+        nodesets:
+          - compute
+        enabled: true
+        config:
+          State: UP
+          MaxTime: UNLIMITED
+          Default: "YES"
+          PriorityTier: 1
+      - name: apps
+        nodesets:
+          - compute
+        enabled: true
+        config:
+          State: UP
+          MaxTime: UNLIMITED
+          PriorityTier: 65533

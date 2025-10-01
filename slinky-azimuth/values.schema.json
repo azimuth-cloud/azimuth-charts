@@ -2,12 +2,6 @@
     "$schema": "http://json-schema.org/schema#",
     "type": "object",
     "properties": {
-        "partitionName":{
-            "type": "string",
-            "title": "Partition name",
-            "description": "Name of the Slurm partition to be created",
-            "default": "slinky"
-        },
         "nodes": {
             "type": "integer",
             "title": "Compute nodes",
@@ -16,5 +10,5 @@
             "default": 1
         }
     },
-    "required": ["partitionName","nodes"]
+    "required": ["nodes"]
 }
