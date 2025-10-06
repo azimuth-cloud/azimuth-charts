@@ -3,6 +3,60 @@ zenithClient:
   description:
   label: "Jupyter Notebook"
 
+  
+# Configuration of available Jupyter notebook profiles
+# https://z2jh.jupyter.org/en/stable/jupyterhub/customizing/user-environment.html#using-multiple-profiles-to-let-users-select-their-environment
+# The options here allow for dynamic profile configuration based on
+# the properties of the host k8s cluster. By default, the standard notebook
+# profiles are augmented with basic GPU-capable profiles on any cluster
+# which contains at least one (Nvidia or Intel) GPU node. The configuration
+# structure allows these profiles to be overridden or augmented with extra
+# profiles based on the host k8s cluster's node labels.
+user_notebook_profiles:
+  default_profiles:
+    - display_name: "Minimal environment"
+      description: "To avoid too many bells and whistles: Python."
+      slug: "minimal"
+      default: true
+    - display_name: "Datascience environment"
+      description: "If you want the additional bells and whistles: Python, R, and Julia."
+      slug: "datascience"
+      kubespawner_override:
+        image: "quay.io/jupyter/datascience-notebook:2024-08-05"
+    - display_name: "Pytorch environment (CPU)"
+      description: "The official Jupyter Pytorch."
+      slug: "pytorch-cpu"
+      kubespawner_override:
+        image: "quay.io/jupyter/pytorch-notebook:pytorch-2.4.0"
+  custom_profiles:
+    # Label to look for on any node in the host k8s cluster
+    nvidia.com/gpu.present:
+      # Label value to match against
+      label_value: "true"
+      # Profiles to be included if node has a matching label
+      profiles:
+        - display_name: "Pytorch environment (Nvidia GPU)"
+          description: "The official Jupyter Pytorch + CUDA image. Requires a GPU compatible notebook server."
+          slug: "pytorch-nvidia-gpu"
+          kubespawner_override:
+            image: "quay.io/jupyter/pytorch-notebook:cuda12-pytorch-2.4.0"
+            extra_resource_limits:
+              nvidia.com/gpu: "1"
+    gpu.intel.com/device-id.0380-0bd5.present:
+      # Label value to match against
+      label_value: "true"
+      # Profiles to be included if node has a matching label
+      profiles:    
+        - display_name: "Pytorch environment (Intel GPU)"
+          description: "A Jupyter + Intel Pytorch image. Requires a GPU compatible notebook server."
+          slug: "pytorch-intel-gpu"
+          kubespawner_override:
+            image: "ghcr.io/stackhpc/jupyterhub-pytorch-intel-gpu:v0.0.1"
+            extra_resource_limits: 
+              gpu.intel.com/i915: "1"
+            supplemental_gids:
+              - "110"
+
 jupyterhub:
   prePuller:
     hook:
@@ -21,20 +75,24 @@ jupyterhub:
   hub:
     networkPolicy:
       enabled: false
+    image:
+      name: ghcr.io/azimuth-cloud/azimuth-jupyterhub-k8s-hub
+      tag: d7ff379
+    extraVolumes:
+      - name: jupyterhub-profile-config
+        configMap:
+          name: jupyterhub-profile-config
+    extraVolumeMounts:
+      - name: jupyterhub-profile-config
+        mountPath: /etc/jupyterhub/custom
+        readOnly: true
+        
     extraConfig:
-      # Until https://github.com/jupyterhub/kubespawner/issues/498 is fixed
-      # https://discourse.jupyter.org/t/advanced-z2jh-deeply-customizing-the-spawner/8432
-      customspawner.py: |
-        from kubespawner import KubeSpawner
-
-        class CustomSpawner(KubeSpawner):
-            def _build_common_labels(self, extra_labels):
-                labels = super()._build_common_labels(extra_labels)
-                label_username = "jupyter-" + labels['hub.jupyter.org/username']
-                labels['hub.jupyter.org/username'] = label_username
-                return labels
-
-        c.JupyterHub.spawner_class = CustomSpawner
+      load-profiles.py: |
+        import sys
+        sys.path.append("/etc/jupyterhub/custom")
+        from profiles import get_profile_list
+        c.KubeSpawner.profile_list = get_profile_list
 
       # Configure the authentication to respect the X-Remote-User header sent by Zenith from Azimuth
       remoteuser.py: |
