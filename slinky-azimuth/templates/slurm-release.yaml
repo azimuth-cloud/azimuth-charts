@@ -31,20 +31,16 @@ spec:
   driftDetection:
     mode: disabled
   values:
+    global:
+      security:
+        allowInsecureImages: true # TODO: remove after upgrade
     mariadb:
       image:
-        repository: bitnamilegacy/mariadb
-    controller:
-      extraConfMap:
+        repository: bitnamilegacy/mariadb # TODO: remove after upgrade
+    slurm:
+      extraSlurmConf:
         MCSPlugin: mcs/label
         MCSParameters: ondemand,ondemandselect
-        SelectType: select/linear
-        SelectTypeParameter: CR_Memory
-        SchedulerType: sched/backfill
-        PreemptType: preempt/partition_prio
-        PreemptMode: SUSPEND,GANG
-        PriorityType: priority/multifactor
-        PriorityWeightPartition: 1000
     compute:
       nodesets:
         - name: compute
@@ -77,21 +73,21 @@ spec:
           nodeConfig: {}
           partition:
             enabled: false
-    partitions:
-      - name: batch
-        nodesets:
-          - compute
-        enabled: true
-        config:
-          State: UP
-          MaxTime: UNLIMITED
-          Default: "YES"
-          PriorityTier: 1
-      - name: apps
-        nodesets:
-          - compute
-        enabled: true
-        config:
-          State: UP
-          MaxTime: UNLIMITED
-          PriorityTier: 65533
+      partitions:
+        - name: batch
+          nodesets:
+            - compute
+          enabled: true
+          config:
+            State: UP
+            MaxTime: UNLIMITED
+            Default: "YES"
+            PriorityTier: 1
+        - name: apps
+          nodesets:
+            - compute
+          enabled: true
+          config:
+            State: UP
+            MaxTime: UNLIMITED
+            PriorityTier: 65533
