@@ -1,0 +1,57 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+        "replicas": {
+            "type": "integer",
+            "title": "Replicas",
+            "description": "Number of Postgres operator replicas to deploy.",
+            "minimum": 1,
+            "default": 1
+        },
+        "databases": {
+            "type": "array",
+            "title": "Databases",
+            "items": {
+                "type": "string"
+            }
+        },
+        "instances": {
+            "type": "array",
+            "title": "Instances",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "storage": {
+                        "type": "string",
+                        "title": "Storage"
+                    }
+                },
+                "required": ["name","storage"]
+            }
+        },
+        "backupRepos": {
+            "type": "array",
+            "title": "Backup Repos",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "storage": {
+                        "type": "string",
+                        "title": "Storage"
+                    }
+                },
+                "required": ["name","storage"]
+            }
+        }
+    },
+    "required": ["replicas","databases","instances","backupRepos"]
+}

@@ -1,0 +1,13 @@
+pgo:
+  singleNamespace: true
+
+databases:
+  - main
+
+instances:
+  - name: instance1
+    storage: 1Gi
+
+backupRepos:
+  - name: repo1
+    storage: 1Gi
