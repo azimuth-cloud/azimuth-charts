@@ -12,7 +12,7 @@ spec:
       - {{ .Values.database.name }}
   instances:
     {{- range until (.Values.instances.count | int) }}
-    - name: instance-{{ . }}
+    - name: instance{{ . }}
       dataVolumeClaimSpec:
         accessModes:
         - "ReadWriteOnce"
@@ -24,7 +24,7 @@ spec:
     pgbackrest:
       repos:
       {{- range until (.Values.backupRepos.count | int) }}
-      - name: backup-{{ . }}
+      - name: repo{{ . }}
         volume:
           volumeClaimSpec:
             accessModes:

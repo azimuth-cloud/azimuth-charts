@@ -20,7 +20,8 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "title": "Database Name"
+                    "title": "Database Name",
+                    "default": "main"
                 }
             },
             "required": ["name"]
