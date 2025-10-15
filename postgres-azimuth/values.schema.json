@@ -2,56 +2,59 @@
     "$schema": "http://json-schema.org/schema#",
     "type": "object",
     "properties": {
-        "replicas": {
-            "type": "integer",
-            "title": "Replicas",
-            "description": "Number of Postgres operator replicas to deploy.",
-            "minimum": 1,
-            "default": 1
+        "pgo": {
+            "type": "object",
+            "properties": {
+                "replicas": {
+                    "type": "integer",
+                    "title": "Replicas",
+                    "description": "Number of Postgres operator replicas to deploy.",
+                    "minimum": 1,
+                    "default": 1
+                }
+            },
+            "required": ["replicas"]
         },
-        "databases": {
-            "type": "array",
-            "title": "Databases",
-            "items": {
-                "type": "string"
-            }
+        "database": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "title": "Name"
+                }
+            },
+            "required": ["name"]
         },
         "instances": {
-            "type": "array",
+            "type": "object",
             "title": "Instances",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "title": "Name"
-                    },
-                    "storage": {
-                        "type": "string",
-                        "title": "Storage"
-                    }
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "title": "Name"
                 },
-                "required": ["name","storage"]
-            }
+                "storage": {
+                    "type": "string",
+                    "title": "Storage"
+                }
+            },
+            "required": ["count","storage"]
         },
         "backupRepos": {
-            "type": "array",
-            "title": "Backup Repos",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "title": "Name"
-                    },
-                    "storage": {
-                        "type": "string",
-                        "title": "Storage"
-                    }
+            "type": "object",
+            "title": "Instances",
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "title": "Name"
                 },
-                "required": ["name","storage"]
-            }
+                "storage": {
+                    "type": "string",
+                    "title": "Storage"
+                }
+            },
+            "required": ["count","storage"]
         }
     },
-    "required": ["replicas","databases","instances","backupRepos"]
+    "required": ["pgo","database","instances","backupRepos"]
 }

@@ -1,13 +1,14 @@
 pgo:
   singleNamespace: true
+  replicas: 1
 
-databases:
-  - main
+database:
+  name: "main"
 
 instances:
-  - name: instance1
-    storage: 1Gi
+  count: 1
+  storage: 1Gi
 
 backupRepos:
-  - name: repo1
-    storage: 1Gi
+  count: 1
+  storage: 1Gi

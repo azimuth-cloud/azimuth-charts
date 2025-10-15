@@ -8,27 +8,28 @@ spec:
   postgresVersion: 17 #TODO: dependabot somehow
   users:
     - name: azimuth
-      databases: {{ .Values.databases }}
+      databases:
+      - {{ .Values.database.name }}
   instances:
-    {{- range .Values.instances }}
-    - name: {{ .name }}
+    {{- range until (.Values.instances.count | int) }}
+    - name: instance-{{ . }}
       dataVolumeClaimSpec:
         accessModes:
         - "ReadWriteOnce"
         resources:
           requests:
-            storage: {{ .storage }}
+            storage: {{ $.Values.instances.storage }}
     {{- end }}
   backups:
     pgbackrest:
       repos:
-      {{- range .Values.backupRepos }}
-      - name: {{ .name }}
+      {{- range until (.Values.backupRepos.count | int) }}
+      - name: backup-{{ . }}
         volume:
           volumeClaimSpec:
             accessModes:
             - "ReadWriteOnce"
             resources:
               requests:
-                storage: {{ .storage }}
+                storage: {{ $.Values.backupRepos.storage }}
       {{- end }}
