@@ -11,7 +11,7 @@ spec:
       databases:
       - {{ .Values.database.name }}
   instances:
-    {{- range until (.Values.instances.count | int) }}
+    {{- range untilStep 1 ((add (.Values.instances.count | int) 1) | int) 1 }}
     - name: instance{{ . }}
       dataVolumeClaimSpec:
         accessModes:
@@ -23,7 +23,7 @@ spec:
   backups:
     pgbackrest:
       repos:
-      {{- range until (.Values.backupRepos.count | int) }}
+      {{- range untilStep 1 ((add (.Values.backupRepos.count | int ) 1) | int) 1 }}
       - name: repo{{ . }}
         volume:
           volumeClaimSpec:
