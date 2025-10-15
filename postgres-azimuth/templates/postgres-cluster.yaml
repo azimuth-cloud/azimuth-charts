@@ -1,7 +1,7 @@
 apiVersion: postgres-operator.crunchydata.com/v1beta1
 kind: PostgresCluster
 metadata:
-  name: postgresdb
+  name: {{ .Values.cluster.name }}
   annotations:
     postgres-operator.crunchydata.com/autoCreateUserSchema: "true"
 spec:

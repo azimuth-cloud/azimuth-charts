@@ -2,6 +2,9 @@ pgo:
   singleNamespace: true
   replicas: 1
 
+cluster:
+  name: postgres-cluster
+
 database:
   name: "main"
 
