@@ -1,0 +1,14 @@
+zenithClient:
+  iconUrl:
+  description:
+  label: "Harbor Registry"
+
+harbor:
+  expose:
+    type: clusterIP
+    tls:
+      enabled: false
+    clusterIP:
+      name: harbor
+
+  externalUrl: https://harbor:443 # must match clusterIP service name
