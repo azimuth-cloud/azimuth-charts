@@ -4,3 +4,15 @@ controls:
     type: NumberControl
     minimum: 1
     step: 2
+  /instances/storage:
+    type: NumberWithUnitsControl
+    units: Gi
+    minimum: 1
+    step: 1
+    displayUnits: GB
+  /backupRepos/storage:
+    type: NumberWithUnitsControl
+    units: Gi
+    minimum: 1
+    step: 1
+    displayUnits: GB

@@ -7,7 +7,7 @@
             "properties": {
                 "replicas": {
                     "type": "integer",
-                    "title": "Replicas",
+                    "title": "Operator replicas",
                     "description": "Number of Postgres operator replicas to deploy.",
                     "minimum": 1,
                     "default": 1
@@ -20,37 +20,39 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "title": "Name"
+                    "title": "Database Name"
                 }
             },
             "required": ["name"]
         },
         "instances": {
             "type": "object",
-            "title": "Instances",
             "properties": {
                 "count": {
                     "type": "integer",
-                    "title": "Name"
+                    "title": "Instances Count",
+                    "default": 1
                 },
                 "storage": {
                     "type": "string",
-                    "title": "Storage"
+                    "title": "Instance Storage",
+                    "default": "1Gi"
                 }
             },
             "required": ["count","storage"]
         },
         "backupRepos": {
             "type": "object",
-            "title": "Instances",
             "properties": {
                 "count": {
                     "type": "integer",
-                    "title": "Name"
+                    "title": "Backup Repo Count",
+                    "default": 1
                 },
                 "storage": {
                     "type": "string",
-                    "title": "Storage"
+                    "title": "Backup Repo Storage",
+                    "default": "1Gi"
                 }
             },
             "required": ["count","storage"]
