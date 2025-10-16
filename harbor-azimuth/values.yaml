@@ -11,4 +11,4 @@ harbor:
     clusterIP:
       name: harbor
 
-  externalUrl: https://harbor:443 # must match clusterIP service name
+  externalUrl: http://harbor:443 # must match clusterIP service name
