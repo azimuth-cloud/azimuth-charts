@@ -1,5 +1,5 @@
 zenithClient:
-  iconUrl:
+  iconUrl: https://raw.githubusercontent.com/goharbor/harbor/refs/heads/main/docs/img/harbor_logo.png
   description:
   label: "Harbor Registry"
 
