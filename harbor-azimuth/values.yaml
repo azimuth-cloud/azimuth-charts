@@ -11,4 +11,7 @@ harbor:
     clusterIP:
       name: harbor
 
-  externalURL: http://core.harbor.harbor # Domain must match expose.clusterIP.name
+  externalURL: http://core.harbor.harbor # Must match http://core.harbor.{{ .Values.harbor.expose.clusterIP }}
+  
+  persistence:
+    resourcePolicy: ""
