@@ -11,4 +11,4 @@ harbor:
     clusterIP:
       name: harbor
 
-  externalUrl: http://harbor:80 # must match clusterIP service name
+  externalURL: http://core.harbor.harbor # Domain must match expose.clusterIP.name
