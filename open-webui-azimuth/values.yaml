@@ -17,5 +17,5 @@ open-webui:
   - name: DEFAULT_USER_ROLE
     value: admin
   - name: ENABLE_ADMIN_EXPORT
-    value: false
+    value: "false"
   
