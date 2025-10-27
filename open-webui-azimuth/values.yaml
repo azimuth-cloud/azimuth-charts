@@ -10,8 +10,6 @@ open-webui:
       type: 'nvidia'
       number: 1
     replicaCount: 1
-    persistentVolume:
-      enabled: true
 
   extraEnvVars:
   - name: WEBUI_AUTH_TRUSTED_EMAIL_HEADER
