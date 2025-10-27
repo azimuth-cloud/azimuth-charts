@@ -2,3 +2,22 @@ zenithClient:
   iconUrl: https://raw.githubusercontent.com/open-webui/open-webui/main/static/favicon.png
   description:
   label: "Open WebUI Platform"
+
+open-webui:
+  ollama:
+    gpu:
+      enabled: true
+      type: 'nvidia'
+      number: 1
+    replicaCount: 1
+    persistentVolume:
+      enabled: true
+
+  extraEnvVars:
+  - name: WEBUI_AUTH_TRUSTED_EMAIL_HEADER
+    value: X-Remote-User
+  - name: DEFAULT_USER_ROLE
+    value: admin
+  - name: ENABLE_ADMIN_EXPORT
+    value: false
+  
