@@ -1,0 +1,35 @@
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: {{ .Values.cluster.name }}
+  annotations:
+    postgres-operator.crunchydata.com/autoCreateUserSchema: "true"
+spec:
+  postgresVersion: 17 #TODO: dependabot somehow
+  users:
+    - name: {{ .Values.cluster.username }}
+      databases:
+      - {{ .Values.database.name }}
+  instances:
+    {{- range untilStep 1 ((add (.Values.instances.count | int) 1) | int) 1 }}
+    - name: instance{{ . }}
+      dataVolumeClaimSpec:
+        accessModes:
+        - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: {{ $.Values.instances.storage }}
+    {{- end }}
+  backups:
+    pgbackrest:
+      repos:
+      {{- range untilStep 1 ((add (.Values.backupRepos.count | int ) 1) | int) 1 }}
+      - name: repo{{ . }}
+        volume:
+          volumeClaimSpec:
+            accessModes:
+            - "ReadWriteOnce"
+            resources:
+              requests:
+                storage: {{ $.Values.backupRepos.storage }}
+      {{- end }}
