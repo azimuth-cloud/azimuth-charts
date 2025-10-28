@@ -1,9 +1,15 @@
+zenithClient:
+  iconUrl: https://raw.githubusercontent.com/postgres/pgweb/master/media/img/about/press/elephant.png
+  description:
+  label: "Admin Console"
+
 pgo:
   singleNamespace: true
   replicas: 1
 
 cluster:
   name: postgres-cluster
+  username: azimuth
 
 database:
   name: "main"
@@ -14,4 +20,7 @@ instances:
 
 backupRepos:
   count: 1
+  storage: 1Gi
+
+adminConsole:
   storage: 1Gi
