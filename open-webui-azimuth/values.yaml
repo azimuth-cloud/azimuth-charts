@@ -10,12 +10,4 @@ open-webui:
       type: 'nvidia'
       number: 1
     replicaCount: 1
-
-  extraEnvVars:
-  - name: WEBUI_AUTH_TRUSTED_EMAIL_HEADER
-    value: X-Remote-User-Email
-  - name: DEFAULT_USER_ROLE
-    value: admin
-  - name: ENABLE_ADMIN_EXPORT
-    value: "false"
   
