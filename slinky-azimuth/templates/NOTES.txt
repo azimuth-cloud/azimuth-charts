@@ -1,0 +1,10 @@
+Slinky - https://slurm.schedmd.com/slinky.html is a bridge between Slurm and Kubernetes,
+allowing Slurm nodes and job scheduling to be run on a Kubernetes cluster.
+
+This chart is designed to work with Azimuth (Standalone mode),
+a self service portal for applications on kubernetes.
+
+This chart installs the flux sources and helmreleases into namespace.sources ("flux" by default)
+and then slurm-operator and slurm into namespace.slurm-operator and .slurm ("slinky" and "slurm" by default)
+
+CURRENTLY IN ALPHA AND UNSTABLE.
