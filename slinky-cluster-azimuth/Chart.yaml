@@ -1,0 +1,17 @@
+apiVersion: v2
+name: slinky-cluster-azimuth
+description: An Slurm environment for Kubernetes.
+type: application
+version: 0.1.0
+appVersion: 0.1.0
+icon: https://raw.githubusercontent.com/SchedMD/slurm/master/doc/html/slurm_logo.png
+
+dependencies:
+  - name: slurm
+    version: 0.2.1
+    repository: oci://ghcr.io/slinkyproject/charts
+    # version: ">=0-0"
+    # repository: file://./slurm-operator/helm/slurm
+
+annotations:
+  azimuth.stackhpc.com/label: Slinky Cluster

@@ -1,0 +1,18 @@
+slurm:
+  controller:
+    persistence:
+      # Upstream chart defaults to storage class named
+      # 'standard' rather than respecting the is-default
+      # storage class annotation so we need to manually
+      # unset the storage class here so that it uses the
+      # cluster's default
+      storageClass:
+  mariadb:
+    primary:
+      persistence:
+        # Upstream chart defaults to storage class named
+        # 'standard' rather than respecting the is-default
+        # storage class annotation so we need to manually
+        # unset the storage class here so that it uses the
+        # cluster's default
+        storageClass:
