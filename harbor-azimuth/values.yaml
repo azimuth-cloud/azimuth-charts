@@ -1,0 +1,17 @@
+zenithClient:
+  iconUrl: https://raw.githubusercontent.com/goharbor/harbor/refs/heads/main/docs/img/harbor_logo.png
+  description:
+  label: "Harbor Registry"
+
+harbor:
+  expose:
+    type: clusterIP
+    tls:
+      enabled: false
+    clusterIP:
+      name: harbor
+
+  externalURL: http://core.harbor.harbor # Must match http://core.harbor.{{ .Values.harbor.expose.clusterIP }}
+  
+  persistence:
+    resourcePolicy: ""
