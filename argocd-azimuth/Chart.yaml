@@ -8,7 +8,7 @@ icon: https://raw.githubusercontent.com/argoproj/argo-cd/release-2.11/docs/asset
 
 dependencies:
   - name: argo-cd
-    version: 9.1.0
+    version: 9.1.4
     repository: https://argoproj.github.io/argo-helm
 
 annotations:
