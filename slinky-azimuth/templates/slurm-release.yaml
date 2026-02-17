@@ -1,0 +1,93 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: slurm
+spec:
+  targetNamespace: {{ .Values.targetNamespace }}
+  storageNamespace: {{ .Values.targetNamespace }}
+  kubeConfig:
+    secretRef:
+      name: {{ .Values.kubeconfig.name}}
+      key: {{ .Values.kubeconfig.key}}
+  chart:
+    spec:
+      chart: slurm
+      sourceRef:
+        kind: HelmRepository
+        name: slurm-operator-repo
+      version: ">0.1.0-dev.0.stackhpc-0-3-0.0"
+  dependsOn:
+    - name: slurm-operator
+  install:
+    createNamespace: true
+    remediation:
+      retries: -1
+  upgrade:
+    remediation:
+      retries: -1
+  interval: 11m
+  timeout: 10m
+  driftDetection:
+    mode: disabled
+  values:
+    global:
+      security:
+        allowInsecureImages: true # TODO: remove after upgrade
+    mariadb:
+      image:
+        repository: bitnamilegacy/mariadb # TODO: remove after upgrade
+    slurm:
+      extraSlurmConf:
+        MCSPlugin: mcs/label
+        MCSParameters: ondemand,ondemandselect
+    compute:
+      nodesets:
+        - name: compute
+          replicas: {{ .Values.nodes }}
+          enabled: true
+          imagePullPolicy: IfNotPresent
+          image:
+            repository: ""
+            tag: ""
+          priorityClassName: ""
+          nodeSelector:
+            kubernetes.io/os: linux
+          affinity: {}
+          tolerations:
+            - effect: "NoExecute"
+              operator: "Exists"
+              key: slinky.slurm.net/managed-node
+          resources: {}
+          useResourceLimits: true
+          updateStrategy:
+            type: RollingUpdate
+            rollingUpdate:
+              maxUnavailable: 20%
+          persistentVolumeClaimRetentionPolicy:
+            whenDeleted: Retain
+            whenScaled: Retain
+          volumeClaimTemplates: []
+          extraVolumeMounts: []
+          extraVolumes: []
+          nodeConfig: {}
+          partition:
+            enabled: false
+      partitions:
+        - name: batch
+          nodesets:
+            - compute
+          enabled: true
+          config:
+            State: UP
+            MaxTime: UNLIMITED
+            Default: "YES"
+            PriorityTier: 1
+        - name: apps
+          nodesets:
+            - compute
+          enabled: true
+          config:
+            State: UP
+            MaxTime: UNLIMITED
+            PriorityTier: 65533
