@@ -119,6 +119,7 @@ jupyterhub:
                 raise NotImplementedError()
 
         c.JupyterHub.authenticator_class = RemoteUserAuthenticator
+        c.JupyterHub.redirect_to_server = False
 
   singleuser:
     networkPolicy:
