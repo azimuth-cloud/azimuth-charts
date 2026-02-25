@@ -4,6 +4,9 @@ metadata:
   name: admin-console
   namespace: {{ .Release.Name }}
 spec:
+  config:
+    settings:
+      ENHANCED_COOKIE_PROTECTION: False
   users:
   - username: "{{ .Values.cluster.username }}@example.com"
     role: Administrator
