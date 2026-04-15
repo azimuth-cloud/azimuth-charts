@@ -2,23 +2,22 @@
 # package ecosystems to update and where the package manifests are located.
 # Please see the documentation for all configuration options:
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
 version: 2
 updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
+  # - package-ecosystem: "github-actions" # using dependabot for GHA doesn't make sense anymore with the way we are pinning GHA.
+  #   directory: "/"
+  #   schedule:
+  #     interval: "weekly"
   - package-ecosystem: "helm"
     directories:
-    - "/argocd-azimuth"
-    # NOTE(sd109): BinderHub update doesn't work as of 2025-05-06.
-    # See failed workflow:
-    # https://github.com/azimuth-cloud/azimuth-charts/actions/runs/14863837842/job/41735465372
-    # Possibly because there's still no stable BinderHub chart version?
-    # Version list: https://hub.jupyter.org/helm-chart/
-    # - "/binderhub-azimuth"
-    - "/daskhub-azimuth"
-    - "/jupyterhub-azimuth"
+      - "/argocd-azimuth"
+      # NOTE(sd109): BinderHub update doesn't work as of 2025-05-06.
+      # See failed workflow:
+      # https://github.com/azimuth-cloud/azimuth-charts/actions/runs/14863837842/job/41735465372
+      # Possibly because there's still no stable BinderHub chart version?
+      # Version list: https://hub.jupyter.org/helm-chart/
+      # - "/binderhub-azimuth"
+      - "/daskhub-azimuth"
+      - "/jupyterhub-azimuth"
     schedule:
       interval: "weekly"
