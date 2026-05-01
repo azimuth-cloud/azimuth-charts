@@ -1,0 +1,7 @@
+apiVersion: v2
+name: patch-copy-fail
+description: >
+  Helm chart for deploying a daemonset to mitigate CVE-2026-31431 on a kubeadm cluster.
+type: application
+version: 0.1.0
+appVersion: "main"
