@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "patch-copy-fail.name" . }}
+  labels: {{ include "patch-copy-fail.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{ include "patch-copy-fail.selectorLabels" . | nindent 6 }}
+  updateStrategy: {{ toYaml .Values.updateStrategy | nindent 4 }}
+  template:
+    metadata:
+      labels: {{ include "patch-copy-fail.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.tolerations }}
+      tolerations: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      hostPID: true
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: root-mount
+          hostPath:
+            path: /
+            type: Directory
+      initContainers:
+        - image: {{ printf "%s:%s" .Values.image.repository .Values.image.tag }}
+          name: {{ .Chart.Name }}
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              tee /etc/modprobe.d/disable-algif-aead.conf <<<'install algif_aead /bin/false'
+              rmmod algif_aead 2>/dev/null
+              update-initramfs -u
+          securityContext: {{ toYaml .Values.podSecurityContext | nindent 12 }}
+          volumeMounts:
+            - name: root-mount
+              mountPath: /
+      containers:
+        - image: "registry.k8s.io/pause:3.10.1"
+          name: pause
