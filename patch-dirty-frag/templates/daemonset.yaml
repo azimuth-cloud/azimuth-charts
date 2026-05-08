@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "patch-dirty-frag.name" . }}
+  labels: {{ include "patch-dirty-frag.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{ include "patch-dirty-frag.selectorLabels" . | nindent 6 }}
+  updateStrategy: {{ toYaml .Values.updateStrategy | nindent 4 }}
+  template:
+    metadata:
+      labels: {{ include "patch-dirty-frag.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.tolerations }}
+      tolerations: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      hostPID: true
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: root-mount
+          hostPath:
+            path: /
+            type: Directory
+      initContainers:
+        - image: {{ printf "%s:%s" .Values.image.repository .Values.image.tag }}
+          name: {{ .Chart.Name }}
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              cat << EOF | tee /etc/modprobe.d/blacklist-dirty-frag.conf
+              install esp4 /bin/false
+              install esp6 /bin/false
+              install rxrpc /bin/false
+              EOF
+              rmmod esp4 2>/dev/null
+              rmmod esp6 2>/dev/null
+              rmmod rxrpc 2>/dev/null
+              echo 3 > /proc/sys/vm/drop_caches
+              update-initramfs -u
+          securityContext: {{ toYaml .Values.podSecurityContext | nindent 12 }}
+          volumeMounts:
+            - name: root-mount
+              mountPath: /
+      containers:
+        - image: "registry.k8s.io/pause:3.10.1"
+          name: pause
