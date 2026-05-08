@@ -1,0 +1,7 @@
+apiVersion: v2
+name: patch-dirty-frag
+description: >
+  Helm chart for deploying a daemonset to mitigate dirty-frag on a kubeadm cluster.
+type: application
+version: 0.1.0
+appVersion: "main"
