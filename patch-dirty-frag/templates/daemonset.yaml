@@ -27,7 +27,11 @@ spec:
       initContainers:
         - image: {{ printf "%s:%s" .Values.image.repository .Values.image.tag }}
           name: {{ .Chart.Name }}
-          command: ["/bin/bash", "-c"]
+          command:
+           - chroot
+           - /mnt/root
+           - /bin/bash
+           - -c
           args:
             - |
               cat << EOF | tee /etc/modprobe.d/blacklist-dirty-frag.conf
@@ -43,7 +47,7 @@ spec:
           securityContext: {{ toYaml .Values.podSecurityContext | nindent 12 }}
           volumeMounts:
             - name: root-mount
-              mountPath: /
+              mountPath: /mnt/root
       containers:
         - image: "registry.k8s.io/pause:3.10.1"
           name: pause
