@@ -1,0 +1,7 @@
+apiVersion: v2
+name: patch-ssh-keysign-pwn
+description: >
+  Helm chart for deploying a daemonset to mitigate ssh-keysign-pwn on a kubeadm cluster.
+type: application
+version: 0.1.0
+appVersion: "main"
