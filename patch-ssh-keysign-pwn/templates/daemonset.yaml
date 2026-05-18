@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "patch-ssh-keysign-pwn.name" . }}
+  labels: {{ include "patch-ssh-keysign-pwn.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{ include "patch-ssh-keysign-pwn.selectorLabels" . | nindent 6 }}
+  updateStrategy: {{ toYaml .Values.updateStrategy | nindent 4 }}
+  template:
+    metadata:
+      labels: {{ include "patch-ssh-keysign-pwn.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.tolerations }}
+      tolerations: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      hostPID: true
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: root-mount
+          hostPath:
+            path: /
+            type: Directory
+      initContainers:
+        - image: {{ printf "%s:%s" .Values.image.repository .Values.image.tag }}
+          name: {{ .Chart.Name }}
+          command:
+            - chroot
+            - /mnt/root
+            - /bin/bash
+            - -c
+          args:
+            - |
+              sysctl kernel.yama.ptrace_scope=2
+              echo "kernel.yama.ptrace_scope=2" > /etc/sysctl.d/10-ptrace.conf
+          securityContext: {{ toYaml .Values.podSecurityContext | nindent 12 }}
+          volumeMounts:
+            - name: root-mount
+              mountPath: /mnt/root
+      containers:
+        - image: "registry.k8s.io/pause:3.10.1"
+          name: pause
