@@ -1,0 +1,16 @@
+ignore:
+  # Fixed in upstream Python, waiting for image maintainers to include
+  - vulnerability: CVE-2026-6100
+  # Perl is not used in deployment of the image
+  - vulnerability: CVE-2026-12087
+    package:
+      name: libperl5.36
+  - vulnerability: CVE-2026-12087
+    package:
+      name: perl
+  - vulnerability: CVE-2026-12087 
+    package:
+      name: perl-base
+  - vulnerability: CVE-2026-12087 
+    package:
+      name: perl-modules-5.36
