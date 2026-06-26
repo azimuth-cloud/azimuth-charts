@@ -2,6 +2,7 @@ resources:
   - ../base/
   - zenith-client.yml
   - zenith-reservation.yml
+  - profile-namespace.yaml
   - profile-cleanup.yml
   - istio-webhook-cleanup.yml
 
