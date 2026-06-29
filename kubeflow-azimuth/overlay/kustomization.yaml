@@ -39,3 +39,12 @@ patches:
     target:
       kind: HorizontalPodAutoscaler
       version: v2beta2
+
+  # Remove pod-security labels from Namespaces
+  # The label key has a '/' in which can be replaced by '~1'
+  - patch: |-
+      - op: remove
+        path: /metadata/labels/pod-security.kubernetes.io~1enforce
+    target:
+      kind: Namespace
+      version: v1

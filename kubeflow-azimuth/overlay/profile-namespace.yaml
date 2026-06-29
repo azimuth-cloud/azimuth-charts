@@ -3,4 +3,6 @@ kind: Namespace
 metadata:
   labels:
     app.kubernetes.io/part-of: kubeflow-profile
+    # Apply so kustomize patch can remove from all namespaces
+    pod-security.kubernetes.io/enforce: restricted
   name: kubeflow-user-example-com
