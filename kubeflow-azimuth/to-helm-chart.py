@@ -100,8 +100,15 @@ with open('kustomize-build-output.yml', 'r') as input_file:
         
         # NOTE: Some manifest files have '{{' and '}}' instances in comments
         # These need to be escaped so that helm doesn't try to template them
-        # Regex should match everying within a curly bracket that isn't a curly bracket itself
-        manifest_str = re.sub(r"{{([^\{\}]*)}}", r'{{ "{{" }}\1{{ "}}" }}', manifest_str)
+        # There are some quadruple '{{{{' braces in some inline Python scripts
+        # that are in f-strings to resolve to '{{' or '}}' ie to output gotmpl
+        # The quadruple brackets have to be managed separately in the regexes
+        # Regex should match everying within:
+        # i. paired braces that aren't wrapped by another pair (not quad braces)
+        # ii. isn't a brace itself
+        manifest_str = re.sub(r"(?<!{{){{([^\{\}]*)}}(?!<}})", r'{{ "{{" }}\1{{ "}}" }}', manifest_str)
+        # Regex wraps quad braces as helm template safe
+        manifest_str = re.sub(r"{{{{([^\{\}]*)}}}}", r'{{ "{{{{" }}\1{{ "}}}}" }}', manifest_str)
 
         # Write manifest to file
         # NOTE: Avoid using yaml.dumps here as it doesn't properly preserve multi-line
