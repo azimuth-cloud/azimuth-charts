@@ -1,0 +1,7 @@
+apiVersion: v2
+name: patch-cves
+description: >
+  Helm chart for deploying a daemonset to apply runtime CVE mitigations to hosts
+type: application
+version: 0.1.0
+appVersion: "main"
