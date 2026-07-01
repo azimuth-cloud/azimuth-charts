@@ -4,10 +4,24 @@
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 version: 2
 updates:
-  # - package-ecosystem: "github-actions" # using dependabot for GHA doesn't make sense anymore with the way we are pinning GHA.
-  #   directory: "/"
-  #   schedule:
-  #     interval: "weekly"
+  # Automatically propose PRs for out-of-date GitHub actions
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      # Check for new versions weekly
+      interval: weekly
+    # Update all actions in a single PR
+    groups:
+      github-actions:
+        patterns: ["*"]
+    labels:
+      - automation
+      - gha-update
+    # Only allow updates for actions maintained by GitHub
+    allow:
+      - dependency-name: "actions/*"
+      - dependency-name: "azimuth-cloud/github-actions/*"
+
   - package-ecosystem: "helm"
     directories:
       - "/argocd-azimuth"
