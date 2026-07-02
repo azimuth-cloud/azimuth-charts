@@ -25,10 +25,10 @@ priorityClassName: system-node-critical
 
 # Allow the pods to run on control plane nodes if they need to
 tolerations:
-  - key: node-role.kubernetes.io/master
+  - operator: Exists
     effect: NoSchedule
-  - key: node-role.kubernetes.io/control-plane
-    effect: NoSchedule
+  - operator: Exists
+    effect: NoExecute
 
 mitigations:
   - containerName: pedit-cow
