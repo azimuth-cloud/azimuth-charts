@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "patch-cves.name" . }}
+  labels: {{ include "patch-cves.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{ include "patch-cves.selectorLabels" . | nindent 6 }}
+  updateStrategy: {{ toYaml .Values.updateStrategy | nindent 4 }}
+  template:
+    metadata:
+      labels: {{ include "patch-cves.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.tolerations }}
+      tolerations: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      hostPID: true
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: root-mount
+          hostPath:
+            path: /
+            type: Directory
+      initContainers:
+        {{- range .Values.mitigations }}
+        - image: {{ printf "%s:%s" $.Values.image.repository $.Values.image.tag }}
+          name: {{ .containerName }}
+          command:
+           - chroot
+           - /mnt/root
+           - /bin/bash
+           - -c
+          args:
+        {{- toYaml .hostCommands | nindent 12 }}
+          securityContext: {{ toYaml $.Values.podSecurityContext | nindent 12 }}
+          volumeMounts:
+            - name: root-mount
+              mountPath: /mnt/root
+        {{- end }}
+      containers:
+        - image: "registry.k8s.io/pause:3.10.1"
+          name: pause

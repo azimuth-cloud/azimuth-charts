@@ -1,0 +1,52 @@
+# Default values for patch-cves.
+# This is a YAML-formatted file.
+
+image:
+  repository: docker.io/library/busybox
+  pullPolicy: IfNotPresent
+  tag: 1.36.1
+
+imagePullSecrets: []
+
+# Pod-level security context
+podSecurityContext:
+  privileged: true
+  runAsUser: 0
+
+# Update strategy
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 0
+    maxUnavailable: 100%
+
+# Priority Class Name
+priorityClassName: system-node-critical
+
+# Allow the pods to run on control plane nodes if they need to
+tolerations:
+  - operator: Exists
+    effect: NoSchedule
+  - operator: Exists
+    effect: NoExecute
+
+mitigations:
+  - containerName: pedit-cow
+    hostCommands:
+    - |
+      cat << EOF | tee /etc/modprobe.d/blocklist-pedit.conf
+      install act_pedit /bin/false
+      EOF
+      rmmod act_pedit 2>/dev/null
+      echo 3 > /proc/sys/vm/drop_caches
+      update-initramfs -u
+  - containerName: pskb-carve
+    hostCommands:
+    - |
+      cat << EOF | tee /etc/modprobe.d/blocklist-rds.conf
+      install rds /bin/false
+      install rds_tcp /bin/false
+      EOF
+      rmmod rds 2>/dev/null
+      rmmod rds_tcp 2>/dev/null
+      update-initramfs -u
