@@ -1,0 +1,7 @@
+apiVersion: v2
+name: aiworkbench-azimuth
+description: test
+type: application
+version: 0.1.0
+appVersion: 0.1.0
+icon: https://raw.githubusercontent.com/argoproj/argo-cd/release-2.11/docs/assets/argo.png
