@@ -1,5 +1,8 @@
-aiwbDomain: &globalDomain 127-0-0-1.sslip.io
-aiwbExternalIP: &externalIP 127.0.0.1
+storageClassAliases:
+  - alias: multinode
+    source: csi-cinder
+  - alias: mlstorage
+    source: csi-cinder
 
 # cluster-forge subchart
 root:
@@ -41,7 +44,7 @@ root:
   localHelmValues:
     enabled: true
   global:
-    domain: *globalDomain
+    domain: # required
   externalValues:
     enabled: false
 
@@ -59,6 +62,10 @@ root:
         standAloneMode: true
         prometheus:
           url: "http://kube-prometheus-stack-prometheus.monitoring-system.svc.cluster.local:9090"
+    aiwb-infra-external-secrets:
+      helmParameters:
+        - name: standAloneMode
+          value: true
     aim-engine:
       valuesObject:
         clusterModelSource:
@@ -119,14 +126,13 @@ root:
             type: StrategicMerge
             value:
               spec:
-                loadBalancerIP: *externalIP
+                loadBalancerIP: # required
         aiGateway:
           nodeSelector: null
 
-openbaoBootstrap:
-  domain: *globalDomain
-  minio:
-    apiAccessKey: api-default-user
-    consoleAccessKey: default-user
-  airm:
-    keycloakAdminClientId: admin-client-id-value
+# Legacy secret definitions needed for OpenBao bootstrap
+minio:
+  apiAccessKey: api-default-user
+  consoleAccessKey: default-user
+airm:
+  keycloakAdminClientId: admin-client-id-value

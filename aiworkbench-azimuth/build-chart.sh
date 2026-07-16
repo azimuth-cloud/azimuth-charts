@@ -6,7 +6,7 @@ git clone --depth 1 --branch $GIT_VERSION $GIT_REPO /tmp/cluster-forge
 sed "s|name: openbao-secret-manager-scripts|name: openbao-secret-manager-scripts-init|g" /tmp/cluster-forge/sources/openbao-config/0.1.0/templates/openbao-secret-manager-cm.yaml > templates/openbao-secret-manager-cm.yaml
 sed \
 -e "s|name: openbao-secrets-config|name: openbao-secrets-init-config|g" \
--e "s|.Values|.Values.openbaoBootstrap|g" \
+-e "s|.Values.domain|.Values.root.global.domain|g" \
 /tmp/cluster-forge/sources/openbao-config/0.1.0/templates/openbao-secret-definitions.yaml > templates/openbao-secret-definitions.yaml
 # Cluster-forge root chart doesn't have Helm repository so packaging tarball directly into charts dir
 helm package /tmp/cluster-forge/root --destination ./charts

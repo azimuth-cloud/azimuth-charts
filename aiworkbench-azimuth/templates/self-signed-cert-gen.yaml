@@ -1,4 +1,4 @@
-{{- if contains "sslip.io" .Values.aiwbDomain  }}
+{{- if contains "sslip.io" .Values.root.global.domain  }}
 ---
 apiVersion: v1
 kind: Namespace
@@ -30,8 +30,8 @@ metadata:
 spec:
   secretName: cluster-tls
   dnsNames:
-    - "{{ .Values.aiwbDomain }}"
-    - "*.{{ .Values.aiwbDomain }}"
+    - "{{ .Values.root.global.domain }}"
+    - "*.{{ .Values.root.global.domain }}"
   issuerRef:
     name: selfsigned-issuer
     kind: Issuer
