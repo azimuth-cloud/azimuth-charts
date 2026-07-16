@@ -1,0 +1,63 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+        "pgo": {
+            "type": "object",
+            "properties": {
+                "replicas": {
+                    "type": "integer",
+                    "title": "Operator replicas",
+                    "description": "Number of Postgres operator replicas to deploy.",
+                    "minimum": 1,
+                    "default": 1
+                }
+            },
+            "required": ["replicas"]
+        },
+        "database": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "title": "Database Name",
+                    "default": "main"
+                }
+            },
+            "required": ["name"]
+        },
+        "instances": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "title": "Instances Count",
+                    "default": 1
+                },
+                "storage": {
+                    "type": "string",
+                    "title": "Instance Storage",
+                    "default": "1Gi"
+                }
+            },
+            "required": ["count","storage"]
+        },
+        "backupRepos": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "title": "Backup Repo Count",
+                    "default": 1
+                },
+                "storage": {
+                    "type": "string",
+                    "title": "Backup Repo Storage",
+                    "default": "1Gi"
+                }
+            },
+            "required": ["count","storage"]
+        }
+    },
+    "required": ["pgo","database","instances","backupRepos"]
+}

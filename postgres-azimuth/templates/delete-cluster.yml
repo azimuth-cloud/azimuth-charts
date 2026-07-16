@@ -1,0 +1,58 @@
+# Delete cluster CRD before deleting operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Release.Name }}-delete-cluster
+  namespace: {{ .Release.Name }}
+rules:
+- apiGroups:
+  - postgres-operator.crunchydata.com
+  resources:
+  - postgresclusters
+  verbs:
+  - get
+  - list
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Release.Name }}-delete-cluster
+  namespace: {{ .Release.Name }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ .Release.Name }}-delete-cluster
+subjects:
+# Namespace is unique to Azimuth app so using default
+# service account is fine.
+- kind: ServiceAccount
+  name: default
+  namespace: {{ .Release.Name }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: delete-cluster
+  namespace: {{ .Release.Name }}
+  annotations:
+    helm.sh/hook: pre-delete
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: hook-succeeded
+spec:
+  template:
+    spec:
+      containers:
+      - name: delete-cluster
+        image: gcr.io/google_containers/hyperkube:v1.18.0
+        command:
+        - kubectl
+        - delete
+        - -n
+        - {{ .Release.Name }}
+        - postgrescluster
+        - {{ .Values.cluster.name }}
+        - --wait
+      restartPolicy: Never
+      serviceAccountName: default

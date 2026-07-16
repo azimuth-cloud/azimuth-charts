@@ -1,0 +1,27 @@
+controls:
+  # Enforce odd number of instances for HA
+  /pgo/replicas:
+    type: NumberControl
+    minimum: 1
+    step: 2
+  /instances/count:
+    type: NumberControl
+    minimum: 1
+    step: 1
+  /instances/storage:
+    type: NumberWithUnitsControl
+    units: Gi
+    minimum: 1
+    step: 1
+    displayUnits: GB
+  /backupRepos/count:
+    type: NumberControl
+    minimum: 1
+    step: 1
+    maximum: 4
+  /backupRepos/storage:
+    type: NumberWithUnitsControl
+    units: Gi
+    minimum: 1
+    step: 1
+    displayUnits: GB
