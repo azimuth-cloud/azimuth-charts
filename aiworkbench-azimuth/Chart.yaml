@@ -6,3 +6,7 @@ version: 0.1.0
 appVersion: 0.1.0
 # Placeholder
 icon: https://avatars.githubusercontent.com/u/22750772
+
+
+annotations:
+  azimuth.stackhpc.com/label: AMD AI Workbench

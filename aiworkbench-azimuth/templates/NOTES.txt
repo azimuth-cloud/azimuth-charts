@@ -1,0 +1,26 @@
+Once ArgoCD applications have finished deploying, the AI Workbench will be available at
+<https://aiwbui.{{ .Values.root.global.domain }}>.
+
+{{- if contains "sslip.io" .Values.root.global.domain }}
+A TLS certificate to add to your system trust store can be retrieved with
+`kubectl get secrets -n envoy-gateway-system cluster-tls`
+{{- else }}
+The TLS certificate for your domain must be added as a secret to the cluster with
+```
+kubectl create secret tls -n envoy-gateway-system cluster-tls \
+  --key your-keyfile.key \
+  --cert your-cert.crt
+```
+{{- end }}
+
+The initial dev user's credentials can be extracted with
+```
+echo "username:devuser@{{ .Values.root.global.domain }}" \
+&& kubectl get secret airm-user-credentials -n airm -o jsonpath='{.data.USER_PASSWORD}' | base64 -d && echo
+```
+Further user management can be done with the internal Keycloak server at <https://kc.{{ .Values.root.global.domain }}>.
+Admin credentials can be extracted with
+```
+echo "username:silogen-admin" && \
+kubectl get secret keycloak-credentials -n keycloak -o jsonpath='{.data.KEYCLOAK_INITIAL_ADMIN_PASSWORD}' | base64 -d && echo
+```
