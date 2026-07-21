@@ -16,7 +16,7 @@ kubectl create secret tls -n envoy-gateway-system cluster-tls \
 The initial dev user's credentials can be extracted with
 ```
 echo "username:devuser@{{ .Values.root.global.domain }}" \
-&& kubectl get secret airm-user-credentials -n airm -o jsonpath='{.data.USER_PASSWORD}' | base64 -d && echo
+&& kubectl get secret airm-realm-credentials -n keycloak -o jsonpath='{.data.KEYCLOAK_INITIAL_DEVUSER_PASSWORD}' | base64 -d && echo
 ```
 Further user management can be done with the internal Keycloak server at <https://kc.{{ .Values.root.global.domain }}>.
 Admin credentials can be extracted with
