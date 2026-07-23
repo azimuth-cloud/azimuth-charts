@@ -1,0 +1,38 @@
+{{- if contains "sslip.io" .Values.root.global.domain  }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: envoy-gateway-system
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "0"
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+  namespace: envoy-gateway-system
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "1"
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cluster-tls
+  namespace: envoy-gateway-system
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "1"
+spec:
+  secretName: cluster-tls
+  dnsNames:
+    - "{{ .Values.root.global.domain }}"
+    - "*.{{ .Values.root.global.domain }}"
+  issuerRef:
+    name: selfsigned-issuer
+    kind: Issuer
+{{- end }}

@@ -1,0 +1,10 @@
+apiVersion: v2
+name: aiworkbench-azimuth
+description: AMD Enterprise AI Workbench
+type: application
+version: 0.1.0
+appVersion: 0.1.0
+icon: https://raw.githubusercontent.com/azimuth-cloud/azimuth-charts/feat/aiwb/aiworkbench-azimuth/amd-logo.png
+
+annotations:
+  azimuth.stackhpc.com/label: AMD AI Workbench
