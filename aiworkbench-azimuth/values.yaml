@@ -1,3 +1,8 @@
+zenithClient:
+  iconUrl: https://raw.githubusercontent.com/argoproj/argo-cd/release-2.11/docs/assets/logo.png
+  description:
+  label: "Deployment Status"
+
 storageClassAliases:
   - alias: multinode
     source: csi-cinder
