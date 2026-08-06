@@ -56,6 +56,19 @@ user_notebook_profiles:
               gpu.intel.com/i915: "1"
             supplemental_gids:
               - "110"
+    # AMD doesn't have a "present" label, look up an arbitrary label instead
+    amd.com/gpu.product-name:
+      # Profiles to be included if node has a matching label
+      profiles:
+        - display_name: "Pytorch environment (AMD GPU)"
+          description: "Jupyter on top of the official Pytorch + ROCm image. Requires a GPU compatible notebook server."
+          slug: "pytorch-amd-gpu"
+          kubespawner_override:
+            image: "ghcr.io/stackhpc/jupyterhub-pytorch-amd-gpu:v0.0.1"
+            extra_resource_limits:
+              amd.com/gpu: "1"
+            supplemental_gids:
+              - "110"
 
 jupyterhub:
   prePuller:
