@@ -72,6 +72,9 @@ jobs:
       - name: Build Helm chart from kustomize manifests
         run: cd kubeflow-azimuth/ && ./build-chart.sh
 
+      - name: Pull AI Workbench dependencies
+        run: cd aiworkbench-azimuth/ && ./build-chart.sh
+
       - name: Publish Helm charts
         uses: azimuth-cloud/github-actions/helm-publish@master
         with:
