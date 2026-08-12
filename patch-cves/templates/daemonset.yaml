@@ -25,7 +25,7 @@ spec:
             path: /
             type: Directory
       initContainers:
-        {{- range .Values.mitigations }}
+        {{- range (concat .Values.mitigationsDefault .Values.mitigationsExtra) }}
         - image: {{ printf "%s:%s" $.Values.image.repository $.Values.image.tag }}
           name: {{ .containerName }}
           command:
