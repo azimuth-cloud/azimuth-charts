@@ -6,4 +6,8 @@ metadata:
 spec:
   reservationName: {{ include "argocd-azimuth.fullname" . }}
   upstream:
-    serviceName: {{ .Release.Name }}-argocd-server
+  {{- if contains "argocd" .Release.Name }}
+    serviceName: {{ .Release.Name | trunc 63 | trimSuffix "-" }}-server
+  {{- else }}
+    serviceName: {{ printf "%s-%s" .Release.Name "argocd" }}-server
+  {{- end -}}
