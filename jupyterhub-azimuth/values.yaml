@@ -64,7 +64,7 @@ user_notebook_profiles:
           description: "Jupyter on top of the official Pytorch + ROCm image. Requires a GPU compatible notebook server."
           slug: "pytorch-amd-gpu"
           kubespawner_override:
-            image: "ghcr.io/stackhpc/jupyterhub-pytorch-amd-gpu:v0.0.1"
+            image: "ghcr.io/stackhpc/jupyterhub-pytorch-amd-gpu:v0.0.2"
             extra_resource_limits:
               amd.com/gpu: "1"
             supplemental_gids:
