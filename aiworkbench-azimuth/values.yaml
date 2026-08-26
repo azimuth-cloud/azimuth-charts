@@ -1,0 +1,143 @@
+zenithClient:
+  iconUrl: https://raw.githubusercontent.com/argoproj/argo-cd/release-2.11/docs/assets/logo.png
+  description:
+  label: "Deployment Status"
+
+storageClassAliases:
+  - alias: multinode
+    source: csi-cinder
+  - alias: mlstorage
+    source: csi-cinder
+
+# cluster-forge subchart
+root:
+  clusterForge:
+    repoUrl: "https://github.com/stackhpc/cluster-forge.git"
+    targetRevision: 2-2-0-azimuth
+  enabledApps:
+    - cnpg-operator
+    - opentelemetry-operator
+    - keycloak
+    - cluster-auth
+    - cluster-auth-config
+    # Re-enable for auto catalogue discovery in prod (with model filters)
+    # but heavy on disk for dev
+    # - aim-cluster-model-source
+    - aim-engine
+    - aim-engine-crds
+    - kserve
+    - kserve-crds
+    - aiwb
+    - aiwb-infra-cnpg
+    - aiwb-infra-external-secrets
+    - openbao
+    - openbao-config
+    - openbao-init-job
+    - external-secrets
+    - external-secrets-config
+    - kyverno
+    - kyverno-policies-base
+    - ai-gateway-discovery
+    - inference-extension-crds
+    - envoy-gateway
+    - envoy-gateway-config
+    - envoy-ai-gateway-crds
+    - envoy-ai-gateway
+    - seaweedfs-crds
+    - seaweedfs-operator
+    - seaweedfs-config
+  localHelmValues:
+    enabled: true
+  global:
+    domain: # required
+  externalValues:
+    enabled: false
+
+  apps:
+    aiwb-infra-cnpg:
+      valuesObject:
+        storage:
+          size: "10Gi"
+          storageClass: null
+        walStorage:
+          size: "2Gi"
+          storageClass: null
+    aiwb:
+      valuesObject:
+        standAloneMode: true
+        prometheus:
+          url: "http://kube-prometheus-stack-prometheus.monitoring-system.svc.cluster.local:9090"
+    aiwb-infra-external-secrets:
+      helmParameters:
+        - name: standAloneMode
+          value: true
+    aim-engine:
+      valuesObject:
+        clusterModelSource:
+          enable: false
+    keycloak:
+      valuesObject:
+        storageClassName: "csi-cinder" #FIXME
+    seaweedfs-config:
+      valuesObject:
+        seaweed:
+          storageClassName: csi-cinder #FIXME
+          master:
+            replicas: 1
+            volumeSizeLimitMB: 1024
+          volume:
+            replicas: 1
+            requests:
+              storage: 250Gi
+          filer:
+            replicas: 1
+            requests:
+              storage: 10Gi
+    openbao:
+      valuesObject:
+        server:
+          dataStorage:
+            size: 5Gi
+          ha:
+            enabled: false
+            raft:
+              enabled: false
+            replicas: 1
+          resources:
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+    openbao-init-job:
+      helmParameters:
+        - name: domain
+          value: "{{ .Values.global.domain }}"
+      namespace: cf-openbao
+      path: openbao-init-job/0.1.0
+      syncWave: -60
+      valuesFile: values.yaml
+    envoy-gateway-config:
+      helmParameters:
+        - name: rkeCoreDNS.enabled
+          value: false
+        - name: domain
+          value: "{{ .Values.global.domain }}"
+      valuesObject:
+        appsGateway:
+          nodeSelector: null
+          envoyServicePatch:
+            type: StrategicMerge
+            value:
+              spec:
+                loadBalancerIP: # required
+        aiGateway:
+          nodeSelector: null
+
+# Legacy secret definitions needed for OpenBao bootstrap
+minio:
+  apiAccessKey: api-default-user
+  consoleAccessKey: default-user
+airm:
+  keycloakAdminClientId: admin-client-id-value
