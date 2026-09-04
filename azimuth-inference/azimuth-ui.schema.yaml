@@ -1,0 +1,17 @@
+controls:
+  /modelStorage/existingClaim:
+    type: TextControl
+    required: false
+  /modelStorage/storageClass:
+    type: TextControl
+  /modelStorage/size:
+    type: TextControl
+  /scheduling/azimuthNodeGroupSelector:
+    type: TextControl
+    required: true
+
+sortOrder:
+  - /scheduling/azimuthNodeGroupSelector
+  - /modelStorage/existingClaim
+  - /modelStorage/storageClass
+  - /modelStorage/size

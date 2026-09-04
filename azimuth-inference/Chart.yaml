@@ -1,0 +1,15 @@
+apiVersion: v2
+name: azimuth-inference
+description: Curated Kubernetes-native llama.cpp inference runtimes for Azimuth.
+type: application
+version: 0.1.0
+appVersion: local
+annotations:
+  azimuth.stackhpc.com/label: Inference Runtime
+dependencies:
+  - repository: https://helm.openwebui.com/
+    name: open-webui
+    version: 16.1.0
+  - repository: oci://ghcr.io/berriai
+    name: litellm-helm
+    version: 1.98.0
