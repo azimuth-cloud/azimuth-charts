@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-proxy-config
+  labels:
+    {{- include "azimuth-inference.componentLabels" (dict "root" . "component" "litellm") | nindent 4 }}
+data:
+  config.yaml: |
+    {{- include "azimuth-inference.gatewayConfig" . | trim | nindent 4 }}

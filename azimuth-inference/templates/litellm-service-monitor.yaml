@@ -1,0 +1,26 @@
+# Using own service monitor as upstream doesn't support auth
+# and service is behind unauthenticated Zenith tunnel
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: "{{ .Release.Name }}-litellm-sm"
+spec:
+  endpoints:
+  - interval: 15s
+    path: /metrics/
+    port: http
+    scheme: http
+    scrapeTimeout: 10s
+    authorization:
+      credentials:
+        name: "litellm-secrets"
+        key: PROXY_MASTER_KEY
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: litellm
+{{- end }}

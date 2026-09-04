@@ -1,0 +1,279 @@
+{
+  "title": "Azimuth Inference (llama.cpp)",
+  "uid": "azimuth-inference",
+  "tags": ["azimuth", "inference", "llama.cpp"],
+  "timezone": "browser",
+  "editable": true,
+  "schemaVersion": 39,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "type": "row",
+      "title": "Service",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
+    },
+    {
+      "type": "stat",
+      "title": "Scrape target up",
+      "description": "llama.cpp exposes no request-count or error-count metrics, so request availability and 4xx/5xx rates are not derivable from the engine. They come from the gateway instead, on the Azimuth Inference Gateway (LiteLLM) dashboard.",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red", "index": 0 } } },
+            { "type": "value", "options": { "1": { "text": "UP", "color": "green", "index": 1 } } }
+          ]
+        }
+      },
+      "targets": [
+        { "refId": "A", "expr": "min by (model) (up{container=\"llama-server\"})", "legendFormat": "{{model}}" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Requests processing",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "targets": [
+        { "refId": "A", "expr": "sum by (model) (llamacpp:requests_processing)", "legendFormat": "{{model}}" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Requests deferred (queue)",
+      "description": "Requests waiting for a free slot. With --parallel 1 there is one slot per replica, so any sustained non-zero value is queueing.",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        { "refId": "A", "expr": "sum by (model) (llamacpp:requests_deferred)", "legendFormat": "{{model}}" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Max context seen (tokens)",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "targets": [
+        { "refId": "A", "expr": "max by (model) (llamacpp:n_tokens_max)", "legendFormat": "{{model}}" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Busy slots per decode",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "targets": [
+        { "refId": "A", "expr": "avg by (model) (llamacpp:n_busy_slots_per_decode)", "legendFormat": "{{model}}" }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Throughput",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Instantaneous throughput (last request)",
+      "description": "llama.cpp gauges reporting the most recent request's rates, not a rolling average.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "fieldConfig": { "defaults": { "unit": "none", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        { "refId": "A", "expr": "llamacpp:prompt_tokens_seconds", "legendFormat": "prompt tok/s {{model}}" },
+        { "refId": "B", "expr": "llamacpp:predicted_tokens_seconds", "legendFormat": "decode tok/s {{model}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Mean throughput over 5m (from counters)",
+      "description": "Counter-derived means, robust to the gauges only reflecting the last request.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "fieldConfig": { "defaults": { "unit": "none", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model) (rate(llamacpp:prompt_tokens_total[5m])) / clamp_min(sum by (model) (rate(llamacpp:prompt_seconds_total[5m])), 0.001)",
+          "legendFormat": "prompt tok/s {{model}}"
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (model) (rate(llamacpp:tokens_predicted_total[5m])) / clamp_min(sum by (model) (rate(llamacpp:tokens_predicted_seconds_total[5m])), 0.001)",
+          "legendFormat": "decode tok/s {{model}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Token volume",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "fieldConfig": { "defaults": { "unit": "none", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        { "refId": "A", "expr": "sum by (model) (rate(llamacpp:prompt_tokens_total[5m]))", "legendFormat": "prompt tokens/s in {{model}}" },
+        { "refId": "B", "expr": "sum by (model) (rate(llamacpp:tokens_predicted_total[5m]))", "legendFormat": "tokens/s out {{model}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Tokens per decode step (speculative acceptance)",
+      "description": "With MTP enabled, each decode step can emit more than one accepted token. 1.0 means no speculative benefit; the recorded MTP2 sweep found only a small median gain, so watch this against the profile's cost in GPU memory. This is the closest available proxy for acceptance rate: llama.cpp publishes no acceptance metric directly.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "min": 0,
+          "custom": { "fillOpacity": 8 }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model) (rate(llamacpp:tokens_predicted_total[5m])) / clamp_min(sum by (model) (rate(llamacpp:n_decode_total[5m])), 0.001)",
+          "legendFormat": "tokens per decode {{model}}"
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (model) (rate(llamacpp:n_decode_total[5m]))",
+          "legendFormat": "decode steps/s {{model}}"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "GPU",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 }
+    },
+    {
+      "type": "timeseries",
+      "title": "GPU framebuffer free (MiB)",
+      "description": "The 35B profile leaves very little headroom, and llama.cpp allocates some compute buffers lazily on the first request. Sustained values near zero mean the profile is unsafe on this hardware.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 23 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decmbytes",
+          "custom": { "fillOpacity": 8 },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 512 },
+              { "color": "green", "value": 1024 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        { "refId": "A", "expr": "DCGM_FI_DEV_FB_FREE", "legendFormat": "{{Hostname}} gpu {{gpu}} free" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "GPU framebuffer used (MiB)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 23 },
+      "fieldConfig": { "defaults": { "unit": "decmbytes", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        { "refId": "A", "expr": "DCGM_FI_DEV_FB_USED", "legendFormat": "{{Hostname}} gpu {{gpu}} used" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "GPU utilisation (%)",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 31 },
+      "fieldConfig": { "defaults": { "unit": "percent", "max": 100, "min": 0, "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        { "refId": "A", "expr": "DCGM_FI_DEV_GPU_UTIL", "legendFormat": "{{Hostname}} gpu {{gpu}} util" },
+        { "refId": "B", "expr": "DCGM_FI_DEV_MEM_COPY_UTIL", "legendFormat": "{{Hostname}} gpu {{gpu}} mem copy" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "GPU power (W)",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 31 },
+      "fieldConfig": { "defaults": { "unit": "watt", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        { "refId": "A", "expr": "DCGM_FI_DEV_POWER_USAGE", "legendFormat": "{{Hostname}} gpu {{gpu}} power" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "GPU temperature (C)",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 31 },
+      "fieldConfig": { "defaults": { "unit": "celsius", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        { "refId": "A", "expr": "DCGM_FI_DEV_GPU_TEMP", "legendFormat": "{{Hostname}} gpu {{gpu}} temp" },
+        { "refId": "B", "expr": "DCGM_FI_DEV_MEMORY_TEMP", "legendFormat": "{{Hostname}} gpu {{gpu}} hbm temp" }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Host resources",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 39 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Container memory working set vs request",
+      "description": "The GGUF is mmap'd, so much of this is reclaimable page cache. Treat it as a placement signal, not as a headroom measurement, and do not set a memory limit from it.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 40 },
+      "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (pod) (container_memory_working_set_bytes{container=\"llama-server\"})",
+          "legendFormat": "working set {{pod}}"
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (pod) (kube_pod_container_resource_requests{container=\"llama-server\", resource=\"memory\"})",
+          "legendFormat": "request {{pod}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "GPU node memory available",
+      "description": "Host RAM exhaustion, not VRAM, is what OOM-killed the equivalent VM deployment.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 40 },
+      "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "node_memory_MemAvailable_bytes",
+          "legendFormat": "available {{instance}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Container CPU",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 48 },
+      "fieldConfig": { "defaults": { "unit": "none", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{container=\"llama-server\"}[5m]))",
+          "legendFormat": "cores {{pod}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Container restarts",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 48 },
+      "fieldConfig": { "defaults": { "unit": "none", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (pod) (kube_pod_container_status_restarts_total{container=\"llama-server\"})",
+          "legendFormat": "restarts {{pod}}"
+        }
+      ]
+    }
+  ]
+}
