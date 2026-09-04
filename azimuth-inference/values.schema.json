@@ -19,7 +19,7 @@
         "size": {
           "type": "string",
           "title": "Model volume size",
-          "description": "Capacity requested for each dynamically provisioned model volume. One model per volume; the largest single artifact is 21.6 GiB, and a multimodal profile's weights and vision projector are counted together (Gemma 4: 21.6 GiB plus 1.1 GiB).",
+          "description": "Capacity requested for each dynamically provisioned model volume. One model per volume.",
           "default": "40Gi"
         }
       }
