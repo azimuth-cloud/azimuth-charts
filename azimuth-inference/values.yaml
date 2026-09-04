@@ -67,6 +67,8 @@ litellm-helm:
       usernameKey: username
       passwordKey: password
       endpointKey: endpoint
+  migrationJob:
+    backoffLimit: 1000
 
 litellmDB:
   image:
