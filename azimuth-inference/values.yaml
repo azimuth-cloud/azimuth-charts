@@ -67,6 +67,7 @@ litellm-helm:
       usernameKey: username
       passwordKey: password
       endpointKey: endpoint
+  backoffLimit: 100
 
 litellmDB:
   image:
