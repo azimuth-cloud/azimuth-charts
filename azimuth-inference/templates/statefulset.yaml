@@ -1,0 +1,240 @@
+{{- range $model := (include "azimuth-inference.models" $ | fromYaml).models }}
+{{- $ctx := dict "root" $ "model" $model }}
+{{- $profile := include "azimuth-inference.modelProfile" $ctx | fromYaml }}
+{{- $storage := $model.modelStorage }}
+{{- $artifacts := (include "azimuth-inference.modelArtifacts" $ctx | fromYaml).artifacts }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "azimuth-inference.modelFullname" $ctx }}
+  labels:
+    {{- include "azimuth-inference.modelLabels" $ctx | nindent 4 }}
+spec:
+  serviceName: {{ include "azimuth-inference.modelFullname" $ctx }}
+  replicas: {{ $model.replicas }}
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: OnDelete
+  selector:
+    matchLabels:
+      {{- include "azimuth-inference.modelSelectorLabels" $ctx | nindent 6 }}
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Delete
+  template:
+    metadata:
+      labels:
+        {{- include "azimuth-inference.modelSelectorLabels" $ctx | nindent 8 }}
+    spec:
+      terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
+      {{- if not $storage.existingClaim }}
+      initContainers:
+        - name: acquire-model
+          image: {{ include "azimuth-inference.image" $ | quote }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          command: ["/bin/sh", "-ec"]
+          args:
+            - |
+              set -eu
+              dir={{ include "azimuth-inference.modelDir" $ | quote }}
+              mkdir -p "${dir}"
+              # Preserve every expected partial; pruning per artifact would make a
+              # multimodal profile delete its other in-progress download.
+              find "${dir}" -maxdepth 1 -name '*.gguf.partial' \
+              {{- range $artifact := $artifacts }}
+                ! -name {{ printf "%s.partial" $artifact.file | quote }} \
+              {{- end }}
+                -delete
+              # Use return rather than exit so every artifact is fetched.
+              fetch() {
+                expected="$1"
+                target="${dir}/$2"
+                url="$3"
+                partial="${target}.partial"
+                if [ -f "${target}" ] && echo "${expected}  ${target}" | sha256sum -c -; then
+                  return 0
+                fi
+                rm -f "${target}"
+                # A verified partial completed before rename; resuming it returns 416.
+                if [ -f "${partial}" ] && echo "${expected}  ${partial}" | sha256sum -c -; then
+                  mv "${partial}" "${target}"
+                  return 0
+                fi
+                curl --fail --location --retry 5 --retry-delay 5 --continue-at - \
+                  --output "${partial}" "${url}"
+                if ! echo "${expected}  ${partial}" | sha256sum -c -; then
+                  rm -f "${partial}"
+                  exit 1
+                fi
+                mv "${partial}" "${target}"
+              }
+              {{- range $artifact := $artifacts }}
+              fetch {{ $artifact.sha256 | quote }} {{ $artifact.file | quote }} {{ $artifact.url | quote }}
+              {{- end }}
+          volumeMounts:
+            - name: model-storage
+              mountPath: /srv/inference
+      {{- end }}
+      containers:
+        - name: llama-server
+          image: {{ include "azimuth-inference.image" $ | quote }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          args:
+            - --host
+            - 0.0.0.0
+            - --port
+            - "8000"
+            - --model
+            - {{ include "azimuth-inference.modelPath" $ctx | quote }}
+            {{- with include "azimuth-inference.mmprojPath" $ctx }}
+            - --mmproj
+            - {{ . | quote }}
+            {{- if $profile.noMmprojOffload }}
+            - --no-mmproj-offload
+            {{- end }}
+            {{- end }}
+            - --alias
+            - {{ include "azimuth-inference.modelAlias" $ctx | quote }}
+            - --jinja
+            {{- with $profile.chatTemplateFile }}
+            - --chat-template-file
+            - {{ printf "/etc/llama.cpp/chat-templates/%s" . | quote }}
+            {{- end }}
+            - --n-gpu-layers
+            - all
+            - --ctx-size
+            - {{ $profile.contextSize | quote }}
+            - --parallel
+            - {{ $profile.parallel | quote }}
+            {{- with $profile.batchSize }}
+            - --batch-size
+            - {{ . | quote }}
+            {{- end }}
+            {{- with $profile.microBatchSize }}
+            - --ubatch-size
+            - {{ . | quote }}
+            {{- end }}
+            {{- with $profile.cacheRam }}
+            - --cache-ram
+            - {{ . | quote }}
+            {{- end }}
+            {{- with $profile.ctxCheckpoints }}
+            - --ctx-checkpoints
+            - {{ . | quote }}
+            {{- end }}
+            - --split-mode
+            - {{ $profile.splitMode | quote }}
+            - --tensor-split
+            - {{ $profile.tensorSplit | quote }}
+            - --flash-attn
+            - {{ $profile.flashAttention | quote }}
+            - -ctk
+            - {{ $profile.kvCacheType | quote }}
+            - -ctv
+            - {{ $profile.kvCacheType | quote }}
+            {{- with $model.reasoning }}
+            - --reasoning
+            - {{ . | quote }}
+            {{- end }}
+            {{- if $.Values.monitoring.enabled }}
+            - --metrics
+            {{- end }}
+            {{- range $profile.extraArgs }}
+            - {{ . | quote }}
+            {{- end }}
+          env:
+            - name: LLAMA_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: llama-api-key
+                  key: BACKEND_API_KEY
+          ports:
+            - name: api
+              containerPort: 8000
+          startupProbe:
+            httpGet:
+              path: /health
+              port: api
+            periodSeconds: 10
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: api
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: api
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            requests:
+              {{- with $profile.resources }}
+              {{- with .requests }}
+              {{- toYaml . | nindent 14 }}
+              {{- end }}
+              {{- end }}
+              {{ include "azimuth-inference.gpuResourceName" $ctx }}: {{ include "azimuth-inference.gpuCount" $ctx }}
+            limits:
+              {{- with $profile.resources }}
+              {{- with .limits }}
+              {{- toYaml . | nindent 14 }}
+              {{- end }}
+              {{- end }}
+              {{ include "azimuth-inference.gpuResourceName" $ctx }}: {{ include "azimuth-inference.gpuCount" $ctx }}
+          volumeMounts:
+            - name: model-storage
+              mountPath: /srv/inference
+              {{- if $storage.existingClaim }}
+              readOnly: {{ $storage.existingClaimReadOnly }}
+              {{- end }}
+            - name: chat-template
+              mountPath: /etc/llama.cpp/chat-templates
+              readOnly: true
+            - name: shm
+              mountPath: /dev/shm
+      volumes:
+        {{- if $storage.existingClaim }}
+        - name: model-storage
+          persistentVolumeClaim:
+            claimName: {{ $storage.existingClaim | quote }}
+        {{- end }}
+        - name: chat-template
+          configMap:
+            name: {{ include "azimuth-inference.fullname" $ }}-chat-template
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 8Gi
+      {{- with include "azimuth-inference.modelNodeSelector" $ctx }}
+      nodeSelector:
+        {{- . | nindent 8 }}
+      {{- end }}
+      {{- with $model.scheduling.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $model.scheduling.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $model.scheduling.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- if not $storage.existingClaim }}
+  volumeClaimTemplates:
+    - metadata:
+        name: model-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- with $storage.storageClass }}
+        storageClassName: {{ . | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ $storage.size }}
+  {{- end }}
+{{- end }}

@@ -1,0 +1,284 @@
+# Model aliases must be unique. Quote a reasoning override of "off" so YAML does
+# not parse it as a boolean.
+models:
+  - name: qwen36-35b-a3b
+
+image:
+  repository: ghcr.io/ggml-org/llama.cpp
+  digest: sha256:4e13f8776c715ee613fa35cb33bdae8d3ed2829d2fb460567637797a319393df
+  pullPolicy: IfNotPresent
+
+# Shorter grace periods can terminate active streamed completions.
+terminationGracePeriodSeconds: 120
+
+modelStorage:
+  existingClaim: ""
+  existingClaimReadOnly: true
+  storageClass: ""
+  size: 40Gi
+
+scheduling:
+  azimuthNodeGroupSelector: ""
+  nodeSelector: {}
+  requireGpuNode: true
+  tolerations: []
+  affinity: {}
+  topologySpreadConstraints: []
+
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+monitoring:
+  enabled: true
+  serviceMonitor:
+    interval: 30s
+    scrapeTimeout: 10s
+  dashboard:
+    enabled: true
+    label: grafana_dashboard
+    labelValue: "1"
+  alerts:
+    enabled: true
+
+service:
+  type: ClusterIP
+
+litellm-helm:
+  replicas: 1
+  image:
+    repository: ghcr.io/berriai/litellm
+    tag: "v1.90.2"
+  proxyConfigMap:
+    create: false
+    name: gateway-proxy-config
+    key: config.yaml
+  environmentSecrets:
+    - litellm-secrets
+    - llama-api-key
+  masterkeySecretName: litellm-secrets
+  masterkeySecretKey: PROXY_MASTER_KEY
+  db:
+    useExisting: true
+    deployStandalone: false
+    database: litellm
+    secret:
+      name: litellm-db
+      usernameKey: username
+      passwordKey: password
+      endpointKey: endpoint
+  backoffLimit: 100
+
+litellmDB:
+  image:
+    repository: postgres
+    digest: sha256:21f6013073bc6b92830a2129570e2f5ec42a6c734b5a985a41e83aa58f54c3c1
+    imagePullPolicy: IfNotPresent
+
+  database: litellm
+  user: litellm
+
+  size: 8Gi
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+
+litellmConfig:
+  router:
+    # LiteLLM otherwise falls back to simple-shuffle, which breaks conversation
+    # affinity across replicas.
+    routingStrategy: least-busy
+
+    sessionAffinity: true
+    apiKeyAffinity: true
+    affinityTtlSeconds: 3600
+
+    numRetries: 2
+    allowedFails: 2
+    cooldownTime: 30
+
+    enablePreCallChecks: true
+
+    # Testing escape hatch only; this permits multi-replica groups without affinity.
+    allowUnsafeRouting: false
+
+  # These must cover prompt prefill, queueing, and generation.
+  timeouts:
+    request: 600
+    stream: 600
+
+  healthCheck:
+    # Background checks issue real completions and consume the engine's only slot.
+    background: false
+    interval: 30
+
+openWebUIHostedModelsOnly: true
+
+zenith:
+  openWebUI:
+    enabled: true
+    skipAuth: false
+    label: LLM Chat
+    iconUrl: https://raw.githubusercontent.com/open-webui/open-webui/main/static/favicon.png
+    description: Chat with every model this platform serves, in a browser.
+  litellm:
+    enabled: true
+    # Zenith cannot express SDK bearer authentication; LiteLLM API keys remain
+    # the authentication boundary.
+    skipAuth: true
+    label: LLM API
+    iconUrl: https://raw.githubusercontent.com/BerriAI/litellm/v1.96.2/litellm/proxy/logo.jpg
+    description: OpenAI-compatible inference API for every model this platform serves. Authenticate with an API key.
+
+open-webui:
+  extraEnvVars:
+  - name: OPENAI_API_BASE_URL
+    valueFrom:
+      secretKeyRef:
+        name: openwebui-openai-key
+        key: base_url
+  - name: OPENAI_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: openwebui-openai-key
+        key: api_key
+  - name: WEBUI_SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        name: openwebui-secret-key
+        key: secret_key
+  - name: ENABLE_SIGNUP
+    value: "false"
+  - name: DEFAULT_USER_ROLE
+    value: admin
+  - name: ENABLE_FORWARD_USER_INFO_HEADERS
+    value: "true"
+  - name: FORWARD_USER_INFO_HEADER_USER_EMAIL
+    value: x-litellm-end-user-id
+  - name: SCARF_NO_ANALYTICS
+    value: "true"
+  - name: DO_NOT_TRACK
+    value: "true"
+  - name: ANONYMIZED_TELEMETRY
+    value: "false"
+  - name: ENABLE_VERSION_UPDATE_CHECK
+    value: "false"
+  - name: ENABLE_ADMIN_EXPORT
+    value: "false"
+  sso:
+    enabled: true
+    trustedHeader:
+      enabled: true
+      emailHeader: X-Remote-User
+  persistence:
+    size: 8Gi
+  ollama:
+    enabled: false
+  pipelines:
+    enabled: false
+  # Can't template from umbrella chart so turn off built in OPENAI_API_BASE_URL
+  # and OPENAI_API_KEY env var templating and use secretKeyRef in extraEnvVars instead
+  openaiBaseApiUrl: null
+  websocket:
+    enabled: false
+
+# Curated model/runtime/hardware combinations; see docs/model-profiles.md.
+profiles:
+  qwen36-35b-a3b:
+    modelAlias: Qwen_Qwen3.6-35B-A3B-Q4_K_M
+    modelFile: Qwen_Qwen3.6-35B-A3B-Q4_K_M.gguf
+    modelUrl: https://huggingface.co/bartowski/Qwen_Qwen3.6-35B-A3B-GGUF/resolve/main/Qwen_Qwen3.6-35B-A3B-Q4_K_M.gguf?download=true
+    sha256: b46fedd33e0bfb0cae308aa3c158d0a4b2c4a1d2185a1ed6f093cdaf39064772
+    chatTemplateFile: qwen36-bartowski-codex.jinja
+    gpuResourceName: nvidia.com/gpu
+    gpuCount: 2
+    contextSize: 131072
+    parallel: 1
+    cacheRam: 8192
+    splitMode: layer
+    tensorSplit: "3,2"
+    flashAttention: auto
+    kvCacheType: q8_0
+    resources:
+      requests:
+        cpu: "4"
+        memory: 40Gi
+    extraArgs:
+      - --temp
+      - "0.6"
+      - --spec-type
+      - draft-mtp
+      - --spec-draft-n-max
+      - "2"
+      - --spec-draft-n-min
+      - "2"
+  gemma4-26b-a4b:
+    modelAlias: Gemma-4-26B-A4B-it-Q6_K
+    modelFile: gemma-4-26B-A4B-it-UD-Q6_K.gguf
+    modelUrl: https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF/resolve/c099eb48e663fd284577b04978a94ffccb261841/gemma-4-26B-A4B-it-UD-Q6_K.gguf?download=true
+    sha256: 76bf3eee49cca5b076b34a4b575ecd505dabc470512b46f1207b4f9da08385f0
+    mmprojFile: mmproj-F16.gguf
+    mmprojUrl: https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF/resolve/c099eb48e663fd284577b04978a94ffccb261841/mmproj-F16.gguf?download=true
+    mmprojSha256: 418a6d8723067cd712235facbbc5cba6c8fbbd413fc1292d2aace5a027d5a42f
+    # Keeps the projector in host RAM to preserve VRAM; image projection uses CPU.
+    noMmprojOffload: true
+    gpuResourceName: nvidia.com/gpu
+    gpuCount: 2
+    contextSize: 262144
+    parallel: 1
+    cacheRam: 8192
+    splitMode: layer
+    tensorSplit: "7,8"
+    flashAttention: auto
+    kvCacheType: q8_0
+    resources:
+      requests:
+        cpu: "4"
+        memory: 40Gi
+    extraArgs:
+      # Keep reasoning enabled and separate it from final message content.
+      - --reasoning-format
+      - deepseek
+      # Guard this profile against runaway generation.
+      - --n-predict
+      - "8192"
+      - --temp
+      - "1.0"
+      - --top-p
+      - "0.95"
+      - --top-k
+      - "64"
+  qwen36-27b:
+    modelAlias: Qwen_Qwen3.6-27B-Q4_K_M
+    modelFile: Qwen_Qwen3.6-27B-Q4_K_M.gguf
+    modelUrl: https://huggingface.co/bartowski/Qwen_Qwen3.6-27B-GGUF/resolve/main/Qwen_Qwen3.6-27B-Q4_K_M.gguf?download=true
+    sha256: 8739a0cbb80036e5dbdced2085f142b8ba86e3235db8b8039b3769fe5fc70843
+    chatTemplateFile: qwen36-bartowski-codex.jinja
+    gpuResourceName: nvidia.com/gpu
+    gpuCount: 2
+    contextSize: 98304
+    parallel: 1
+    cacheRam: 8192
+    batchSize: 512
+    microBatchSize: 256
+    splitMode: layer
+    tensorSplit: "3,2"
+    flashAttention: "on"
+    kvCacheType: q8_0
+    resources:
+      requests:
+        cpu: "4"
+        memory: 36Gi
+    extraArgs:
+      - --temp
+      - "0.6"
+      - --spec-type
+      - draft-mtp
+      - --spec-draft-n-max
+      - "2"
+      - --spec-draft-n-min
+      - "2"

@@ -1,0 +1,17 @@
+{{- if $.Values.podDisruptionBudget.enabled }}
+{{- range $model := (include "azimuth-inference.models" $ | fromYaml).models }}
+{{- $ctx := dict "root" $ "model" $model }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "azimuth-inference.modelFullname" $ctx }}
+  labels:
+    {{- include "azimuth-inference.modelLabels" $ctx | nindent 4 }}
+spec:
+  maxUnavailable: {{ $.Values.podDisruptionBudget.maxUnavailable }}
+  selector:
+    matchLabels:
+      {{- include "azimuth-inference.modelSelectorLabels" $ctx | nindent 6 }}
+{{- end }}
+{{- end }}

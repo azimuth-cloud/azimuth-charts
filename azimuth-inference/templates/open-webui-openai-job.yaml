@@ -1,0 +1,68 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-openai-secrets
+spec:
+  template:
+    metadata:
+      name: openai-secrets
+    spec:
+      serviceAccountName: openwebui-bootstrap-sa
+      restartPolicy: OnFailure
+      containers:
+        - name: fetch-api-and-create-secret
+          image: alpine/k8s:1.35.6
+          env:
+          - name: LITELLM_MASTER_KEY
+            valueFrom:
+              secretKeyRef:
+                name: "litellm-secrets"
+                key: PROXY_MASTER_KEY
+          - name: LITELLM_URL
+            value: "http://{{ include "azimuth-inference.gatewayFullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:4000"
+          command:
+          - /bin/sh
+          - -c
+          - |
+            SECRET_NAME="openwebui-openai-key"
+            if kubectl get secret "$SECRET_NAME" -n {{ .Release.Namespace }} >/dev/null 2>&1; then
+              echo "Secret '$SECRET_NAME' already exists. Skipping LiteLLM key creation."
+              exit 0
+            fi
+
+            echo "Waiting for target service..."
+            until [ "$(curl -s -o /dev/null -w '%{http_code}' "${LITELLM_URL}/health/readiness")" -eq 200 ]; do
+              echo "LiteLLM not ready"
+              sleep 2
+            done
+
+            echo "LiteLLM is online. Requesting key for Open Web UI"
+            RESPONSE=$(curl -s -X POST "${LITELLM_URL}/key/generate" \
+              -H "Authorization: Bearer ${LITELLM_MASTER_KEY}" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "key_alias": "open-webui-key",
+                {{- if .Values.openWebUIHostedModelsOnly }}
+                "models": {{ include "azimuth-inference.modelAliases" . }}
+                {{- end }}
+              }')
+
+            GENERATED_KEY=$(echo "$RESPONSE" | jq -r '.key')
+            if [ -z "$GENERATED_KEY" ] || [ "$GENERATED_KEY" = "null" ]; then
+              echo "Failed to generate key. Response: $RESPONSE"
+              exit 1
+            fi
+
+            kubectl create secret generic $SECRET_NAME -n {{ .Release.Namespace }} \
+              --from-literal=api_key="$GENERATED_KEY" \
+              --from-literal=base_url="$LITELLM_URL" \
+              --dry-run=client -o yaml | kubectl apply -f -
+          startupProbe:
+            exec:
+              command:
+              - /bin/sh
+              - c
+              - |
+                [ "$(curl -s -o /dev/null -w '%{http_code}' "${LITELLM_URL}/health/readiness")" -eq 200 ]
+            periodSeconds: 4
+            failureThreshold: 40

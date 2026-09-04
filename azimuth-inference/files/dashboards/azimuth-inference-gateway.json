@@ -1,0 +1,218 @@
+{
+  "title": "Azimuth Inference Gateway (LiteLLM)",
+  "uid": "azimuth-inference-gateway",
+  "tags": ["azimuth", "inference", "litellm", "gateway"],
+  "timezone": "browser",
+  "editable": true,
+  "schemaVersion": 39,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Gateway up",
+      "description": "One replica by design, and the per-model endpoints were retired in Increment 3, so this is the availability of the platform's only API endpoint. A rejected scrape also reads DOWN: the ServiceMonitor authenticates with the master key, and a 401 leaves the target present and failing rather than absent.",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red", "index": 0 } } },
+            { "type": "value", "options": { "1": { "text": "UP", "color": "green", "index": 1 } } }
+          ]
+        }
+      },
+      "targets": [
+        { "refId": "A", "expr": "min(up{container=\"litellm\"})", "legendFormat": "gateway" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Backend state (router view)",
+      "description": "The router's view, not the pod's: 0 healthy, 1 partial outage, 2 complete outage. Set only once a request has touched a deployment and held in the gateway process, so it is legitimately blank after a gateway restart until traffic resumes.",
+      "gridPos": { "h": 4, "w": 5, "x": 4, "y": 0 },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "healthy", "color": "green", "index": 0 } } },
+            { "type": "value", "options": { "1": { "text": "partial", "color": "orange", "index": 1 } } },
+            { "type": "value", "options": { "2": { "text": "outage", "color": "red", "index": 2 } } }
+          ]
+        }
+      },
+      "targets": [
+        { "refId": "A", "expr": "max by (litellm_model_name) (litellm_deployment_state)", "legendFormat": "{{litellm_model_name}}" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Requests/s (5m)",
+      "description": "Counters live in the gateway process and reset when it restarts. rate() absorbs the reset; a cumulative total would misreport it.",
+      "gridPos": { "h": 4, "w": 5, "x": 9, "y": 0 },
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(litellm_proxy_total_requests_metric_total[5m]))", "legendFormat": "req/s" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Server errors/s (15m)",
+      "description": "5xx only. 401 and 403 are the API-key check and virtual-key scoping working as designed, so they are excluded here and from the alert.",
+      "gridPos": { "h": 4, "w": 5, "x": 14, "y": 0 },
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(litellm_proxy_failed_requests_metric_total{exception_status=~\"5..\"}[15m]))", "legendFormat": "5xx/s" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "TTFT p95 (streaming)",
+      "description": "STREAMING REQUESTS ONLY: LiteLLM records time-to-first-token under a stream=True guard, so non-streaming traffic leaves this blank however much of it there is. Blank also means fewer than two observations in the window, since rate() over a single sample is zero. Read this sceptically at low traffic: a percentile over a handful of observations interpolates inside the widest populated bucket and returns its upper edge, which on 2026-07-29 read 15s for a backend whose mean was 0.87s. The alert guards against this with a minimum observation rate; this panel does not.",
+      "gridPos": { "h": 4, "w": 5, "x": 19, "y": 0 },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.95, sum by (le) (rate(litellm_llm_api_time_to_first_token_metric_bucket[15m])))", "legendFormat": "p95" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Request rate by model and status",
+      "description": "requested_model is the client-facing ALIAS, not the models[] entry name the engine panels above group by. The two label spaces do not join.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (requested_model, status_code) (rate(litellm_proxy_total_requests_metric_total[5m]))",
+          "legendFormat": "{{requested_model}} {{status_code}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Failures by exception",
+      "description": "All failures including 4xx, unlike the stat and the alert. A steady 401/403 line is a client holding a wrong or out-of-scope key: worth seeing, not worth paging on.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (requested_model, exception_status, exception_class) (rate(litellm_proxy_failed_requests_metric_total[5m]))",
+          "legendFormat": "{{requested_model}} {{exception_status}} {{exception_class}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "End-to-end latency percentiles",
+      "description": "Includes generation time, so a thinking model asked for many tokens is legitimately slow. That is why nothing alerts on this panel: no single threshold is meaningful across both flavours.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.5, sum by (model, le) (rate(litellm_request_total_latency_metric_bucket[15m])))",
+          "legendFormat": "p50 {{model}}"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (model, le) (rate(litellm_request_total_latency_metric_bucket[15m])))",
+          "legendFormat": "p95 {{model}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Time to first token (streaming only)",
+      "description": "The metric llama.cpp cannot provide. Measured baseline on four idle backends, 2026-07-29: 0.24s to 0.45s. Each engine has one KV slot, so a queued request raises this without anything being broken.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.5, sum by (model, le) (rate(litellm_llm_api_time_to_first_token_metric_bucket[15m])))",
+          "legendFormat": "p50 {{model}}"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (model, le) (rate(litellm_llm_api_time_to_first_token_metric_bucket[15m])))",
+          "legendFormat": "p95 {{model}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Gateway overhead",
+      "description": "Time spent in the gateway rather than the engine, which is what says whether routing is free. This family names the routing group model_group and has no model label at all.",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 20 },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (model_group, le) (rate(litellm_overhead_latency_metric_bucket[15m])))",
+          "legendFormat": "p95 {{model_group}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Queue time",
+      "description": "Shown but deliberately not alerted on: what LiteLLM counts as queue time here has not been established against the image, and an alert on guessed semantics is worse than none. The engine-side signal is llamacpp:requests_deferred above.",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 20 },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (model, le) (rate(litellm_request_queue_time_seconds_bucket[15m])))",
+          "legendFormat": "p95 {{model}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Inter-token latency by backend",
+      "description": "Per output token, per backend. The engine's tokens-per-second panels above are the better measure of decode speed; this one earns its place by being attributed per deployment.",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 20 },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (litellm_model_name, le) (rate(litellm_deployment_latency_per_output_token_bucket[15m])))",
+          "legendFormat": "p95 {{litellm_model_name}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Token volume through the gateway",
+      "description": "The gateway's count, which is per request and attributable to a key. The engine's token counters above remain the authority on what the model actually processed.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 28 },
+      "fieldConfig": { "defaults": { "unit": "none", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model) (rate(litellm_input_tokens_metric_total[5m]))",
+          "legendFormat": "prompt {{model}}"
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (model) (rate(litellm_output_tokens_metric_total[5m]))",
+          "legendFormat": "completion {{model}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Requests by key",
+      "description": "api_key_alias is the only time-series view of which client drives load: the spend database records cost per key, not a rate. \"None\" is the master key, which no client should still be holding once scoped virtual keys exist.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 28 },
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "fillOpacity": 8 } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (api_key_alias) (rate(litellm_proxy_total_requests_metric_total[5m]))",
+          "legendFormat": "{{api_key_alias}}"
+        }
+      ]
+    }
+  ]
+}

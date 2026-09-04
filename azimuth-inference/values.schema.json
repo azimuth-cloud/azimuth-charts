@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "modelStorage": {
+      "type": "object",
+      "properties": {
+        "existingClaim": {
+          "type": "string",
+          "title": "Existing model PVC",
+          "description": "(Optional) An existing PVC containing /models/gguf. ReadWriteOnce, so it is valid for a single replica of a single model.",
+          "default": ""
+        },
+        "storageClass": {
+          "type": "string",
+          "title": "Model storage class",
+          "default": "csi-cinder"
+        },
+        "size": {
+          "type": "string",
+          "title": "Model volume size",
+          "description": "Capacity requested for each dynamically provisioned model volume. One model per volume.",
+          "default": "40Gi"
+        }
+      }
+    },
+    "scheduling": {
+      "type": "object",
+      "properties": {
+        "azimuthNodeGroupSelector": {
+          "type": "string",
+          "title": "GPU node group",
+          "description": "(Optional) Node group defined in your Kubernetes platform to schedule inference engine on."
+        }
+      }
+    }
+  },
+  "required": ["modelStorage", "scheduling"]
+}
