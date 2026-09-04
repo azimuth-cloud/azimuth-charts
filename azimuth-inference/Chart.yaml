@@ -6,6 +6,7 @@ version: 0.1.0
 appVersion: local
 annotations:
   azimuth.stackhpc.com/label: Inference Runtime
+icon: https://raw.githubusercontent.com/ggml-org/llama.cpp/master/media/llama1-icon.png
 dependencies:
   - repository: https://helm.openwebui.com/
     name: open-webui
