@@ -3,6 +3,10 @@
 models:
   - name: qwen36-35b-a3b
 
+# Comma seperated list of model profile names to allow input through Azimuth UI
+# Takes precedence over .Values.models if set
+azimuthUIModelsCSL:
+
 image:
   repository: ghcr.io/ggml-org/llama.cpp
   digest: sha256:4e13f8776c715ee613fa35cb33bdae8d3ed2829d2fb460567637797a319393df

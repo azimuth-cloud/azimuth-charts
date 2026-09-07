@@ -144,13 +144,11 @@ general_settings:
 
 {{- define "azimuth-inference.models" -}}
 {{- $root := . -}}
-{{- if not $root.Values.models -}}
-{{- fail "models must contain at least one entry" -}}
-{{- end -}}
+{{- $modelList := fromYamlArray ( include "azimuth-inference.modelList" . ) -}}
 {{- $seenNames := dict -}}
 {{- $seenAliases := dict -}}
 {{- $resolved := list -}}
-{{- range $entry := $root.Values.models -}}
+{{- range $entry := $modelList -}}
 {{- $model := include "azimuth-inference.modelConfig" (dict "root" $root "entry" $entry) | fromYaml -}}
 {{- $name := $model.name -}}
 {{- if not (regexMatch "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" $name) -}}
@@ -180,6 +178,21 @@ general_settings:
 {{- end -}}
 {{- toYaml (dict "models" $resolved) -}}
 {{- end }}
+
+{{- define "azimuth-inference.modelList" -}}
+{{- if .Values.azimuthUIModelsCSL -}}
+  {{- $models := list -}}
+  {{- range $item := splitList "," .Values.azimuthUIModelsCSL -}}
+    {{- $trimmedItem := trim $item -}}
+    {{- if $trimmedItem -}}
+      {{- $models = append $models (dict "name" $trimmedItem) -}}
+    {{- end -}}
+  {{- end -}}
+  {{- toYaml $models -}}
+{{- else if .Values.models -}}
+  {{- toYaml .Values.models -}}
+{{- end -}}
+{{- end -}}
 
 {{- define "azimuth-inference.modelFullname" -}}
 {{- printf "%s-%s" (include "azimuth-inference.fullname" .root) .model.name -}}
@@ -269,7 +282,7 @@ azimuth.stackhpc.com/inference-model: {{ .model.name }}
 {{- end }}
 
 {{- define "azimuth-inference.modelAliases" -}}
-{{- $models := .Values.models -}}
+{{- $models := fromYamlArray ( include "azimuth-inference.modelList" . ) -}}
 {{- $profiles := .Values.profiles -}}
 {{- $aliases := list -}}
 {{- range $model := $models -}}
