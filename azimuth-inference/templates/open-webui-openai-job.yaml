@@ -64,5 +64,5 @@ spec:
               - c
               - |
                 [ "$(curl -s -o /dev/null -w '%{http_code}' "${LITELLM_URL}/health/readiness")" -eq 200 ]
-            periodSeconds: 4
-            failureThreshold: 40
+            periodSeconds: 10
+            failureThreshold: 25
