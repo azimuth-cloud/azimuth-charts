@@ -1,0 +1,118 @@
+{{- $secret := (index .Values "litellm-helm").db.secret }}
+{{- $existing := (get ((lookup "v1" "Secret" .Release.Namespace $secret.name) | default dict) "data") | default dict }}
+{{- $name := include "azimuth-inference.gatewayDbFullname" . }}
+{{- $db := .Values.litellmDB }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $secret.name }}
+  labels:
+    {{- include "azimuth-inference.componentLabels" (dict "root" . "component" "litellmDB") | nindent 4 }}
+type: Opaque
+data:
+  {{ $secret.usernameKey }}: {{ "litellm" | b64enc }}
+  {{ $secret.passwordKey }}: {{ include "azimuth-inference.idempotentSecret" (dict "existing" $existing "key" $secret.passwordKey "generated" (printf "sk-%s" (randAlphaNum 40))) }}
+  {{ $secret.endpointKey }}: {{ printf "%s.%s.svc.cluster.local:5432" $name .Release.Namespace | b64enc }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "azimuth-inference.componentLabels" (dict "root" . "component" "litellm-db") | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "azimuth-inference.componentSelectorLabels" (dict "root" . "component" "litellm-db") | nindent 4 }}
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "azimuth-inference.componentLabels" (dict "root" . "component" "litellm-db") | nindent 4 }}
+spec:
+  serviceName: {{ $name }}
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      {{- include "azimuth-inference.componentSelectorLabels" (dict "root" . "component" "litellm-db") | nindent 6 }}
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Delete
+  template:
+    metadata:
+      labels:
+        {{- include "azimuth-inference.componentSelectorLabels" (dict "root" . "component" "litellm-db") | nindent 8 }}
+    spec:
+      terminationGracePeriodSeconds: 60
+      {{- with $db.nodeSelector }}
+      nodeSelector:
+        {{- . | nindent 8 }}
+      {{- end }}
+      {{- with $db.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: postgres
+          image: {{ printf "%s@%s" $db.image.repository $db.image.digest | quote }}
+          imagePullPolicy: {{ $db.image.imagePullPolicy }}
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_DB
+              value: {{ $db.database | quote }}
+            - name: POSTGRES_USER
+              value: {{ $db.user | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret.name }}
+                  key: {{ $secret.passwordKey }}
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - {{ $db.user | quote }}
+                - -d
+                - {{ $db.database | quote }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - {{ $db.user | quote }}
+                - -d
+                - {{ $db.database | quote }}
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            {{- toYaml $db.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: {{ $db.size }}

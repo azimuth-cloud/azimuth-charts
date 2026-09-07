@@ -1,0 +1,47 @@
+open-webui:
+  sso:
+    enabled: false
+  extraEnvVars:
+  - name: OPENAI_API_BASE_URL
+    valueFrom:
+      secretKeyRef:
+        name: openwebui-openai-key
+        key: base_url
+  - name: OPENAI_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: openwebui-openai-key
+        key: api_key
+  - name: WEBUI_SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        name: openwebui-secret-key
+        key: secret_key
+  - name: ENABLE_SIGNUP
+    value: "false"
+  - name: ENABLE_FORWARD_USER_INFO_HEADERS
+    value: "true"
+  - name: FORWARD_USER_INFO_HEADER_USER_EMAIL
+    value: x-litellm-end-user-id
+  - name: SCARF_NO_ANALYTICS
+    value: "true"
+  - name: DO_NOT_TRACK
+    value: "true"
+  - name: ANONYMIZED_TELEMETRY
+    value: "false"
+  - name: ENABLE_VERSION_UPDATE_CHECK
+    value: "false"
+  - name: WEBUI_ADMIN_EMAIL
+    valueFrom:
+      secretKeyRef:
+        name: openwebui-admin-auth
+        key: email
+  - name: WEBUI_ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: openwebui-admin-auth
+        key: password
+
+zenith:
+  openWebUI:
+    skipAuth: true

@@ -1,0 +1,215 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.alerts.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "azimuth-inference.fullname" . }}
+  labels:
+    {{- include "azimuth-inference.labels" . | nindent 4 }}
+spec:
+  groups:
+    - name: azimuth-inference
+      rules:
+        - alert: InferenceEndpointDown
+          expr: up{container="llama-server"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: llama.cpp inference endpoint is not responding to scrapes
+            description: >-
+              {{ "{{ $labels.pod }}" }} (model {{ "{{ $labels.model }}" }}) has failed
+              its metrics scrape for 5 minutes. A model reload after a restart can
+              take several minutes on this hardware, so check whether the pod is
+              still loading before treating this as a fault.
+
+{{- range $model := (include "azimuth-inference.models" $ | fromYaml).models }}
+        - alert: InferenceTargetMissing
+          expr: absent(up{container="llama-server", model="{{ $model.name }}"})
+          for: 15m
+          labels:
+            severity: warning
+            model: {{ $model.name }}
+          annotations:
+            summary: No llama.cpp scrape target exists for model {{ $model.name }}
+            description: >-
+              Prometheus has no target for model {{ $model.name }}. Either its
+              StatefulSet is gone, monitoring.enabled is false, or the ServiceMonitor
+              no longer matches its Service.
+{{- end }}
+
+        - alert: InferenceGenerationStalled
+          expr: >-
+            llamacpp:requests_processing > 0
+            and rate(llamacpp:tokens_predicted_total[10m]) == 0
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: llama.cpp is holding a request but generating no tokens
+            description: >-
+              {{ "{{ $labels.pod }}" }} (model {{ "{{ $labels.model }}" }}) reports
+              an in-flight request but has produced no tokens for 15 minutes.
+              Killing the client does not cancel server-side generation, so a
+              restart may be required.
+
+        - alert: InferenceRequestsQueued
+          expr: llamacpp:requests_deferred > 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Inference requests are queueing
+            description: >-
+              {{ "{{ $labels.pod }}" }} (model {{ "{{ $labels.model }}" }}) has
+              deferred requests for 15 minutes. Each replica runs with a single KV
+              slot, so sustained queueing means demand exceeds capacity rather than
+              a transient burst.
+
+        - alert: InferenceContainerOOMKilled
+          expr: >-
+            kube_pod_container_status_last_terminated_reason{reason="OOMKilled", container="llama-server"} == 1
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: llama.cpp was OOM-killed
+            description: >-
+              {{ "{{ $labels.pod }}" }} was killed for exceeding available host
+              memory. This is the failure mode that affected the equivalent VM
+              deployment; check the profile's memory request, --cache-ram and
+              context-checkpoint settings rather than assuming a VRAM problem.
+
+        - alert: InferenceContainerRestarting
+          expr: increase(kube_pod_container_status_restarts_total{container="llama-server"}[1h]) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: llama.cpp restarted in the last hour
+            description: >-
+              {{ "{{ $labels.pod }}" }} has restarted. Each restart costs a full
+              model reload, so repeated restarts show up directly as unavailability.
+
+        - alert: InferenceGpuFramebufferLow
+          expr: DCGM_FI_DEV_FB_FREE < 512
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: GPU framebuffer headroom is nearly exhausted
+            description: >-
+              GPU {{ "{{ $labels.gpu }}" }} on {{ "{{ $labels.Hostname }}" }} has
+              under 512 MiB free. llama.cpp allocates some compute buffers lazily on
+              the first request, so a profile that looks fine at startup can still
+              fail to allocate later.
+
+        - alert: InferenceGpuTemperatureHigh
+          expr: DCGM_FI_DEV_GPU_TEMP > 85
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: GPU temperature is sustained above 85C
+            description: >-
+              GPU {{ "{{ $labels.gpu }}" }} on {{ "{{ $labels.Hostname }}" }} has run
+              above 85C for 15 minutes, which usually means clock throttling and
+              therefore reduced throughput.
+
+    - name: azimuth-inference-gateway
+      rules:
+        - alert: InferenceGatewayDown
+          expr: up{container="litellm"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: The LiteLLM gateway is not responding to scrapes
+            description: >-
+              {{ "{{ $labels.pod }}" }} has failed its metrics scrape for 5 minutes.
+              The gateway runs a single replica by design and the per-model endpoints
+              were retired with Increment 3, so there is no bypass: this is a total
+              outage of the platform's only API endpoint. Check whether the
+              control-plane database is reachable — LiteLLM blocks on it at boot and
+              never binds its port, so a database problem presents as this.
+
+        - alert: InferenceGatewayTargetMissing
+          expr: absent(up{container="litellm"})
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: No scrape target exists for the LiteLLM gateway
+            description: >-
+              Prometheus has no gateway target at all, which is a different fault
+              from one that is down: either the ServiceMonitor no longer matches the
+              Service, or monitoring is disabled. Note that an authentication failure
+              does NOT present here — a rejected scrape leaves the target present and
+              down with a 401, which InferenceGatewayDown catches.
+
+        - alert: InferenceGatewayBackendDegraded
+          expr: litellm_deployment_state == 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: The gateway reports a backend in partial outage
+            description: >-
+              The router puts {{ "{{ $labels.litellm_model_name }}" }}
+              ({{ "{{ $labels.model_id }}" }}) in partial outage. Clients may not see
+              this at all, because num_retries means a failed call can succeed on a
+              retry — which is exactly why it is worth alerting on.
+
+        - alert: InferenceGatewayBackendUnavailable
+          expr: litellm_deployment_state == 2
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: The gateway reports a backend in complete outage
+            description: >-
+              The router considers {{ "{{ $labels.litellm_model_name }}" }}
+              ({{ "{{ $labels.model_id }}" }}) completely unavailable. With one
+              deployment per routing group on this release, that means the model is
+              unavailable to clients rather than merely reduced in capacity. Check the
+              engine pod first; this gauge reports the router's view of it, not the
+              pod's own health.
+
+        - alert: InferenceGatewayServerErrors
+          expr: >-
+            sum by (requested_model) (
+              rate(litellm_proxy_failed_requests_metric_total{exception_status=~"5.."}[15m])
+            ) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: The gateway is returning server errors
+            description: >-
+              Requests for {{ "{{ $labels.requested_model }}" }} have been failing
+              with 5xx for 10 minutes. This counts gateway-side failures, so it fires
+              for an unreachable or timing-out engine as well as for a fault in the
+              gateway itself.
+
+        - alert: InferenceGatewayTimeToFirstTokenSlow
+          expr: >-
+            histogram_quantile(0.95,
+              sum by (model, le) (
+                rate(litellm_llm_api_time_to_first_token_metric_bucket[15m])
+              )
+            ) > 10
+            and on (model)
+            sum by (model) (
+              rate(litellm_llm_api_time_to_first_token_metric_count[15m])
+            ) > 0.02
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Time to first token p95 is above 10s
+            description: >-
+              Streaming requests for {{ "{{ $labels.model }}" }} are waiting over 10s
+              for their first token at p95, on enough traffic for that figure to mean
+              something. Note this label is the client-facing alias, not the models[]
+              entry name. Check whether requests are queueing on the engine —
+              InferenceRequestsQueued covers the same cause from the other side.
+{{- end }}

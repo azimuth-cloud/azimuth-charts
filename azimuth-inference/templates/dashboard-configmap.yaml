@@ -1,0 +1,14 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.dashboard.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "azimuth-inference.fullname" . }}-dashboard
+  labels:
+    {{- include "azimuth-inference.labels" . | nindent 4 }}
+    {{ .Values.monitoring.dashboard.label }}: {{ .Values.monitoring.dashboard.labelValue | quote }}
+data:
+  azimuth-inference.json: |
+    {{- .Files.Get "files/dashboards/azimuth-inference.json" | nindent 4 }}
+  azimuth-inference-gateway.json: |
+    {{- .Files.Get "files/dashboards/azimuth-inference-gateway.json" | nindent 4 }}
+{{- end }}

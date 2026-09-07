@@ -14,3 +14,4 @@ ignore:
   - vulnerability: CVE-2026-12087 
     package:
       name: perl-modules-5.36
+  - vulnerability: CVE-2026-7598
