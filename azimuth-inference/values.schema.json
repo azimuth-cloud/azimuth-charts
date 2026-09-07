@@ -33,6 +33,10 @@
           "description": "(Optional) Node group defined in your Kubernetes platform to schedule inference engine on."
         }
       }
+    },
+    "azimuthUIModelsCSL": {
+      "type": "string",
+      "title": "Model profiles (comma separated list)"
     }
   },
   "required": ["modelStorage", "scheduling"]
