@@ -36,7 +36,8 @@
     },
     "azimuthUIModelsCSL": {
       "type": "string",
-      "title": "Model profiles (comma separated list)"
+      "title": "Model profiles (comma separated list)",
+      "default": ""
     }
   },
   "required": ["modelStorage", "scheduling"]
