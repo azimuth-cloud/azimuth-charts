@@ -37,16 +37,15 @@ jobs:
         id: filter
         with:
           filters: |
-            paths:
-              argocd:
-                - 'argocd-azimuth/**'
-              binderhub:
-                - 'binderhub-azimuth/**'
-              daskhub:
-                - 'daskhub-azimuth/**'
-              jupyterhub:
-                - 'jupyterhub-azimuth/**'
-                - 'images/**'
+            argocd:
+              - 'argocd-azimuth/**'
+            binderhub:
+              - 'binderhub-azimuth/**'
+            daskhub:
+              - 'daskhub-azimuth/**'
+            jupyterhub:
+              - 'jupyterhub-azimuth/**'
+              - 'images/**'
 
   publish_artifacts:
     needs: [fail_on_remote]
