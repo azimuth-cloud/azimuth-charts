@@ -1,6 +1,24 @@
 name: Publish charts
-# Run the tasks on every push
-on: push
+on: 
+  # Publish artifacts on every push to main and every tag
+  push:
+    branches:
+      - main
+    tags:
+      - "*"
+  # Also allow publication to be done via a workflow call
+  # In this case, the chart version is returned as an output
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        description: The ref to build.
+        required: true
+    outputs:
+      chart-version:
+        description: The chart version that was published
+        value: ${{ jobs.publish_charts.outputs.chart-version }}
+
 jobs:
   build_push_jupyterhub_image:
     name: Build and push jupyter custom image
@@ -56,6 +74,8 @@ jobs:
       # PRs created by dependabot user
       contents: write
       pages: write
+    outputs:
+      chart-version: ${{ steps.semver.outputs.version }}
     steps:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
