@@ -59,6 +59,7 @@ jobs:
       id-token: write # needed for signing the images with GitHub OIDC Token
       packages: write # required for pushing container images
       security-events: write # required for pushing SARIF files
+      pages: write
   
   run_azimuth_tests:
     name: Run Azimuth tests
