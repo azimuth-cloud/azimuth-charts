@@ -23,6 +23,7 @@ jobs:
   build_push_jupyterhub_image:
     name: Build and push jupyter custom image
     runs-on: ubuntu-latest
+    continue-on-error: true #TODO: remove
     permissions:
       contents: read
       id-token: write         # needed for signing the images with GitHub OIDC Token

@@ -87,7 +87,7 @@ jobs:
           echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Set up Azimuth environment
-        uses: azimuth-cloud/azimuth-config/.github/actions/setup@temp-apps-test
+        uses: azimuth-cloud/azimuth-config/.github/actions/setup@temp-apps-test  #TODO: revert
         with:
           os-clouds: ${{ secrets.OS_CLOUDS }}
           environment-prefix: charts-ci
@@ -96,11 +96,11 @@ jobs:
         timeout-minutes: 180
 
       - name: Provision Azimuth
-        uses: azimuth-cloud/azimuth-config/.github/actions/provision@temp-apps-test
+        uses: azimuth-cloud/azimuth-config/.github/actions/provision@temp-apps-test #TODO: revert
 
       - name: Run Azimuth tests
-        uses: azimuth-cloud/azimuth-config/.github/actions/test@temp-apps-test
+        uses: azimuth-cloud/azimuth-config/.github/actions/test@temp-apps-test #TODO: revert
 
       - name: Destroy Azimuth
-        uses: azimuth-cloud/azimuth-config/.github/actions/destroy@temp-apps-test
+        uses: azimuth-cloud/azimuth-config/.github/actions/destroy@temp-apps-test #TODO: revert
         if: ${{ always() }}
