@@ -18,37 +18,6 @@ jobs:
       - name: PR must be from a branch in the azimuth-cloud/azimuth-capi-operator repo
         run: exit ${{ github.event.pull_request.head.repo.full_name == 'azimuth-cloud/azimuth-charts' && '0' || '1' }}
 
-  detect_changes:
-    name: Detect Files Changed
-    permissions:
-      contents: read
-    needs: [fail_on_remote]
-    runs-on: ubuntu-latest
-    outputs:
-      changed_apps: ${{ steps.filter.outputs.changes }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-
-      - name: Paths Filter
-        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
-        id: filter
-        with:
-          filters: |
-            argocd:
-              - 'argocd-azimuth/**'
-            binderhub:
-              - 'binderhub-azimuth/**'
-            daskhub:
-              - 'daskhub-azimuth/**'
-            jupyterhub:
-              - 'jupyterhub-azimuth/**'
-              - 'images/**'
-            patch-cves:
-              - 'patch-cves/**'
-
   publish_artifacts:
     needs: [fail_on_remote]
     uses: ./.github/workflows/publish-charts.yaml
@@ -64,41 +33,23 @@ jobs:
   
   run_azimuth_tests:
     name: Run Azimuth tests
-    needs: [publish_artifacts, detect_changes]
-    if: ${{ needs.detect_changes.outputs.changed_apps != '[]' }}
+    needs: [publish_artifacts]
     runs-on: ubuntu-latest
     steps:
-      - name: Construct variables file
-        id: construct_vars
-        if: ${{ steps.filter.outputs.changes != '[]' }}
-        run: |
-          CHANGED_APPS='${{ needs.detect_changes.outputs.changed_apps }}'
-          CHART_VERSION='${{ needs.publish_artifacts.outputs.chart-version }}'
-
-          echo "extra_vars_yaml<<EOF" >> "$GITHUB_OUTPUT"
-
-          echo "generate_tests_caas_suite_enabled: false" >> "$GITHUB_OUTPUT"
-          echo "generate_tests_kubernetes_suite_enabled: false" >> "$GITHUB_OUTPUT"
-          echo "azimuth_capi_operator_azimuth_charts_version: ${CHART_VERSION}" >> "$GITHUB_OUTPUT"
-
-          for APP in $(echo "$CHANGED_APPS" | jq -r '.[]'); do
-            if [ "$APP" = "patch-cves" ]; then
-              # Don't need additional variables since tested by default in CI
-              # but still want to run tests if changed
-              continue
-            fi
-            echo "generate_tests_kubernetes_apps_test_case_${APP}_enabled: true" >> "$GITHUB_OUTPUT"
-          done
-
-          echo "EOF" >> "$GITHUB_OUTPUT"
-
       - name: Set up Azimuth environment
         uses: azimuth-cloud/azimuth-config/.github/actions/setup@temp-apps-test  #TODO: revert
         with:
           os-clouds: ${{ secrets.OS_CLOUDS }}
           environment-prefix: charts-ci
           target-cloud: ${{ vars.TARGET_CLOUD }}
-          extra-vars: ${{ steps.construct_vars.outputs.extra_vars_yaml }}
+          extra-vars: |
+            generate_tests_caas_suite_enabled: false
+            generate_tests_kubernetes_suite_enabled: false
+            generate_tests_kubernetes_apps_test_case_argocd_enabled: true
+            generate_tests_kubernetes_apps_test_case_binderhub_enabled: true
+            generate_tests_kubernetes_apps_test_case_daskhub_enabled: true
+            generate_tests_kubernetes_apps_test_case_jupyterhub_enabled: true
+            azimuth_capi_operator_azimuth_charts_version: ${{ needs.publish_artifacts.outputs.chart-version }}
         timeout-minutes: 180
 
       - name: Provision Azimuth
