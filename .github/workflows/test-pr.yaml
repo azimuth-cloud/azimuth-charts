@@ -2,8 +2,14 @@ name: Integration tests
 
 on:
   # We use pull_request_target so that dependabot-created workflows can run
-  # TODO: change to pull_request_target_after initial testing
-  - pull_request
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+      - reopened
+    branches:
+      - main
 
 # Use the head ref for workflow concurrency, with cancellation
 # This should mean that any previous workflows for a PR get cancelled when a new commit is pushed
@@ -37,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Azimuth environment
-        uses: azimuth-cloud/azimuth-config/.github/actions/setup@temp-apps-test  #TODO: revert
+        uses: azimuth-cloud/azimuth-config/.github/actions/setup@devel
         with:
           os-clouds: ${{ secrets.OS_CLOUDS }}
           environment-prefix: charts-ci
@@ -53,11 +59,11 @@ jobs:
         timeout-minutes: 180
 
       - name: Provision Azimuth
-        uses: azimuth-cloud/azimuth-config/.github/actions/provision@temp-apps-test #TODO: revert
+        uses: azimuth-cloud/azimuth-config/.github/actions/provision@devel
 
       - name: Run Azimuth tests
-        uses: azimuth-cloud/azimuth-config/.github/actions/test@temp-apps-test #TODO: revert
+        uses: azimuth-cloud/azimuth-config/.github/actions/test@devel
 
       - name: Destroy Azimuth
-        uses: azimuth-cloud/azimuth-config/.github/actions/destroy@temp-apps-test #TODO: revert
+        uses: azimuth-cloud/azimuth-config/.github/actions/destroy@devel
         if: ${{ always() }}
