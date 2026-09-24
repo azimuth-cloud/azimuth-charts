@@ -1,0 +1,24 @@
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PGAdmin
+metadata:
+  name: admin-console
+  namespace: {{ .Release.Name }}
+spec:
+  config:
+    settings:
+      ENHANCED_COOKIE_PROTECTION: False
+  users:
+  - username: "{{ .Values.cluster.username }}@example.com"
+    role: Administrator
+    passwordRef:
+      name: {{ .Values.cluster.name }}-pguser-{{ .Values.cluster.username }}
+      key: password
+  dataVolumeClaimSpec:
+    accessModes:
+    - "ReadWriteOnce"
+    resources:
+      requests:
+        storage: {{ .Values.adminConsole.storage }}
+  serverGroups:
+  - name: all
+    postgresClusterSelector: {}
