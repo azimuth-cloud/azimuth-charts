@@ -1,0 +1,45 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+        "open-webui": {
+            "type": "object",
+            "properties": {
+                "ollama": {
+                    "type": "object",
+                    "properties": {
+                        "ollama": {
+                            "type": "object",
+                            "properties": {
+                                "gpu": {
+                                    "type": "object",
+                                    "properties": {
+                                        "number": {
+                                            "type": "integer",
+                                            "title": "GPUs",
+                                            "description": "The number of GPUs to request for each ollama instance.",
+                                            "minimum": 0,
+                                            "default": 1
+                                        }
+                                    },
+                                    "required": ["number"]
+                                }
+                            },
+                            "required": ["gpu"]
+                        },
+                        "replicaCount": {
+                            "type": "integer",
+                            "title": "Backend Replicas",
+                            "description": "The number of Ollama backend instances. Use > 1 for [loadbalancing](https://docs.openwebui.com/tutorial/ollama) of requests.",
+                            "minimum": 1,
+                            "default": 1
+                        }
+                    },
+                    "required": ["ollama", "replicaCount"]
+                }
+            },
+            "required": ["ollama"]
+        }
+    },
+    "required": ["open-webui"]
+}
