@@ -1,0 +1,31 @@
+{{- if and .Values.zenith.openWebUI.enabled }}
+{{- $tile := .Values.zenith.openWebUI }}
+{{- $name := include "azimuth-inference.openWebUIFullname" . }}
+---
+apiVersion: zenith.stackhpc.com/v1alpha1
+kind: Reservation
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "azimuth-inference.componentLabels" (dict "root" . "component" "open-webui") | nindent 4 }}
+  annotations:
+    azimuth.stackhpc.com/service-label: {{ $tile.label | quote }}
+    azimuth.stackhpc.com/service-icon-url: {{ $tile.iconUrl | quote }}
+    azimuth.stackhpc.com/service-description: {{ $tile.description | quote }}
+spec:
+  credentialSecretName: {{ $name }}-zenith-credential
+---
+apiVersion: zenith.stackhpc.com/v1alpha1
+kind: Client
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "azimuth-inference.componentLabels" (dict "root" . "component" "open-webui") | nindent 4 }}
+spec:
+  reservationName: {{ $name }}
+  upstream:
+    serviceName: {{ .Release.Name }}-open-webui
+    port: 80
+  auth:
+    skip: {{ $tile.skipAuth }}
+{{- end }}

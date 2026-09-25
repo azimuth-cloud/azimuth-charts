@@ -1,0 +1,24 @@
+{{- range $model := (include "azimuth-inference.models" $ | fromYaml).models }}
+{{- $ctx := dict "root" $ "model" $model }}
+{{- $sts := include "azimuth-inference.modelFullname" $ctx }}
+{{- range $i := until (int $model.replicas) }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ printf "%s-%d" $sts $i }}
+  labels:
+    {{- include "azimuth-inference.componentLabels" (dict "root" $ "component" "inference-replica") | nindent 4 }}
+    azimuth.stackhpc.com/inference-model: {{ $model.name }}
+    azimuth.stackhpc.com/inference-replica: {{ $i | quote }}
+spec:
+  type: ClusterIP
+  selector:
+    statefulset.kubernetes.io/pod-name: {{ printf "%s-%d" $sts $i }}
+  ports:
+    - name: api
+      port: 80
+      targetPort: api
+      protocol: TCP
+{{- end }}
+{{- end }}
