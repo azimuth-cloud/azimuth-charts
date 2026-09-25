@@ -1,0 +1,27 @@
+{{- range .Values.storageClassAliases }}
+---
+{{- $existingSC := lookup "storage.k8s.io/v1" "StorageClass" "" .source -}}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .alias }}
+provisioner: {{ $existingSC.provisioner }}
+{{- if $existingSC.parameters }}
+parameters:
+  {{- toYaml $existingSC.parameters | nindent 2 }}
+{{- end }}
+{{- if $existingSC.reclaimPolicy }}
+reclaimPolicy: {{ $existingSC.reclaimPolicy }}
+{{- end }}
+{{- if $existingSC.allowVolumeExpansion }}
+allowVolumeExpansion: {{ $existingSC.allowVolumeExpansion }}
+{{- end }}
+{{- if $existingSC.volumeBindingMode }}
+volumeBindingMode: {{ $existingSC.volumeBindingMode }}
+{{- end }}
+{{- if $existingSC.mountOptions }}
+mountOptions:
+  {{- toYaml $existingSC.mountOptions | nindent 2 }}
+{{- end }}
+
+{{- end }}
