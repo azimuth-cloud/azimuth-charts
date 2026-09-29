@@ -1,0 +1,71 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+        "root": {
+            "type": "object",
+            "properties": {
+                "global": {
+                    "type": "object",
+                    "properties": {
+                        "domain": {
+                            "type": "string",
+                            "title": "Domain",
+                            "description": "Domain to host AI Workbench.  \nIf an <ip>.sslip.io domain is given, a self-signed wildcard cert will be generated with name 'cluster-tls' in namespace 'envoy-gateway-system'.  \nFor other domains, this secret must be created.  \nAI Workbench will be hosted at `https://aiwbui.your-domain`"
+                        }
+                    },
+                    "required": ["domain"]
+                },
+                "apps": {
+                    "type": "object",
+                    "properties": {
+                        "envoy-gateway-config": {
+                            "type": "object",
+                            "properties": {
+                                "valuesObject": {
+                                    "type": "object",
+                                    "properties": {
+                                        "appsGateway": {
+                                            "type": "object",
+                                            "properties": {
+                                                "envoyServicePatch": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "value": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "spec": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "loadBalancerIP": {
+                                                                            "type": "string",
+                                                                            "title": "External IP",
+                                                                            "description": "Floating IP associated with the domain. Must be reserved in the Openstack project."
+                                                                        }
+                                                                    },
+                                                                    "required": ["loadBalancerIP"]
+                                                                }
+                                                            },
+                                                            "required": ["spec"]
+                                                        }
+                                                    },
+                                                    "required": ["value"]
+                                                }
+                                            },
+                                            "required": ["envoyServicePatch"]
+                                        }
+                                    },
+                                    "required": ["appsGateway"]
+                                }
+                            },
+                            "required": ["valuesObject"]
+                        }
+                    },
+                    "required": ["envoy-gateway-config"]
+                }
+            },
+            "required": ["apps","global"]
+        }
+    },
+    "required": ["root"]
+}
