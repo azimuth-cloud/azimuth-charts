@@ -15,3 +15,11 @@ ignore:
     package:
       name: perl-modules-5.36
   - vulnerability: CVE-2026-75803
+  - vulnerability: CVE-2026-8376
+  - vulnerability: CVE-2026-13221
+  - vulnerability: CVE-2026-42496
+  - vulnerability: CVE-2026-57433
+  # Using header based auth plugin, not JWT, so not affected
+  - vulnerability: GHSA-ffc3-869f-jxw9
+  # Doesn't use vulnerable functions
+  - vulnerability: CVE-2026-19445
