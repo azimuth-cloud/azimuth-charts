@@ -134,7 +134,7 @@ litellmConfig:
     background: false
     interval: 30
 
-openWebUIHostedModelsOnly: true
+openWebUIHostedModelsOnly: false
 
 zenith:
   openWebUI:
