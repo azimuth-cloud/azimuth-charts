@@ -158,7 +158,7 @@ general_settings:
 {{- fail (printf "duplicate models[].name %q" $name) -}}
 {{- end -}}
 {{- $_ := set $seenNames $name true -}}
-{{- if not (hasKey $root.Values.profiles $model.profile) -}}
+{{- if not (hasKey $root.Values.llamaCpp.profiles $model.profile) -}}
 {{- fail (printf "model %q references unknown profile %q" $name $model.profile) -}}
 {{- end -}}
 {{- $_ := include "azimuth-inference.modelArtifacts" (dict "root" $root "model" $model) -}}
@@ -209,7 +209,7 @@ azimuth.stackhpc.com/inference-model: {{ .model.name }}
 {{- end }}
 
 {{- define "azimuth-inference.modelProfile" -}}
-{{- $profile := index .root.Values.profiles .model.profile -}}
+{{- $profile := index .root.Values.llamaCpp.profiles .model.profile -}}
 {{- required (printf "unknown inference profile %q" .model.profile) $profile | toYaml -}}
 {{- end }}
 
@@ -283,7 +283,7 @@ azimuth.stackhpc.com/inference-model: {{ .model.name }}
 
 {{- define "azimuth-inference.modelAliases" -}}
 {{- $models := fromYamlArray ( include "azimuth-inference.modelList" . ) -}}
-{{- $profiles := .Values.profiles -}}
+{{- $profiles := .Values.llamaCpp.profiles -}}
 {{- $aliases := list -}}
 {{- range $model := $models -}}
   {{- $profile := index $profiles $model.name -}}
