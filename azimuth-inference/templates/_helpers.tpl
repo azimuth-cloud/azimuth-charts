@@ -40,7 +40,7 @@ app.kubernetes.io/managed-by: {{ .root.Release.Service }}
 {{- end }}
 
 {{- define "azimuth-inference.image" -}}
-{{- printf "%s@%s" .Values.image.repository .Values.image.digest -}}
+{{- printf "%s@%s" .Values.llamaCpp.image.repository .Values.llamaCpp.image.digest -}}
 {{- end }}
 
 {{- define "azimuth-inference.gatewayFullname" -}}
@@ -132,9 +132,9 @@ general_settings:
 {{- $name := required "every models[] entry must set name" $entry.name -}}
 {{- $base := dict
       "replicas" 1
-      "modelStorage" (deepCopy $root.Values.modelStorage)
-      "scheduling" (deepCopy $root.Values.scheduling)
-      "service" (deepCopy $root.Values.service)
+      "modelStorage" (deepCopy $root.Values.llamaCpp.modelStorage)
+      "scheduling" (deepCopy $root.Values.llamaCpp.scheduling)
+      "service" (deepCopy $root.Values.llamaCpp.service)
 -}}
 {{- $model := mergeOverwrite $base (omit (deepCopy $entry) "name") -}}
 {{- $_ := set $model "name" $name -}}
