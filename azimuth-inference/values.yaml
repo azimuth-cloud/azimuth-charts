@@ -7,31 +7,37 @@ models:
 # Takes precedence over .Values.models if set
 azimuthUIModelsCSL: ""
 
-image:
-  repository: ghcr.io/ggml-org/llama.cpp
-  digest: sha256:4e13f8776c715ee613fa35cb33bdae8d3ed2829d2fb460567637797a319393df
-  pullPolicy: IfNotPresent
-
-# Shorter grace periods can terminate active streamed completions.
-terminationGracePeriodSeconds: 120
-
-modelStorage:
-  existingClaim: ""
-  existingClaimReadOnly: true
-  storageClass: ""
-  size: 40Gi
-
-scheduling:
-  azimuthNodeGroupSelector: ""
-  nodeSelector: {}
-  requireGpuNode: true
-  tolerations: []
-  affinity: {}
-  topologySpreadConstraints: []
-
-podDisruptionBudget:
+llamaCpp:
   enabled: true
-  maxUnavailable: 1
+
+  image:
+    repository: ghcr.io/ggml-org/llama.cpp
+    digest: sha256:4e13f8776c715ee613fa35cb33bdae8d3ed2829d2fb460567637797a319393df
+    pullPolicy: IfNotPresent
+
+  # Shorter grace periods can terminate active streamed completions.
+  terminationGracePeriodSeconds: 120
+
+  modelStorage:
+    existingClaim: ""
+    existingClaimReadOnly: true
+    storageClass: ""
+    size: 40Gi
+
+  scheduling:
+    azimuthNodeGroupSelector: ""
+    nodeSelector: {}
+    requireGpuNode: true
+    tolerations: []
+    affinity: {}
+    topologySpreadConstraints: []
+
+  podDisruptionBudget:
+    enabled: true
+    maxUnavailable: 1
+
+  service:
+    type: ClusterIP
 
 monitoring:
   enabled: true
@@ -44,9 +50,6 @@ monitoring:
     labelValue: "1"
   alerts:
     enabled: true
-
-service:
-  type: ClusterIP
 
 litellm-helm:
   replicas: 1
