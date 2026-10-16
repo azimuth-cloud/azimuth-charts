@@ -1,0 +1,33 @@
+scheduling:
+  requireGpuNode: false
+models:
+- name: smollm
+profiles:
+  smollm:
+    modelAlias: SmolLM2-135M-Instruct
+    modelFile: SmolLM2-135M-Instruct-Q6_K.gguf
+    modelUrl: https://huggingface.co/bartowski/SmolLM2-135M-Instruct-GGUF/resolve/main/SmolLM2-135M-Instruct-Q6_K.gguf?download=true
+    sha256: 012e83bc3f8ae14bdead7abdd577bdb0b8ad5a3a913ac1a843a6a3a8d7d5d8a5
+    gpuResourceName: nvidia.com/gpu
+    gpuCount: 0
+    contextSize: 1024
+    parallel: 1
+    cacheRam: 4096
+    splitMode: layer
+    tensorSplit: '1'
+    flashAttention: auto
+    kvCacheType: q8_0
+  smollm2:
+    modelAlias: Other-SmollM
+    modelFile: SmolLM2-135M-Instruct-Q6_K.gguf
+    modelUrl: https://huggingface.co/bartowski/SmolLM2-135M-Instruct-GGUF/resolve/main/SmolLM2-135M-Instruct-Q6_K.gguf?download=true
+    sha256: 012e83bc3f8ae14bdead7abdd577bdb0b8ad5a3a913ac1a843a6a3a8d7d5d8a5
+    gpuResourceName: nvidia.com/gpu
+    gpuCount: 0
+    contextSize: 1024
+    parallel: 1
+    cacheRam: 4096
+    splitMode: layer
+    tensorSplit: '1'
+    flashAttention: auto
+    kvCacheType: q8_0
