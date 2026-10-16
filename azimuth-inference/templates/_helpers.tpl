@@ -58,28 +58,92 @@ app.kubernetes.io/managed-by: {{ .root.Release.Service }}
 {{- end -}}
 {{- end }}
 
-{{- define "azimuth-inference.gatewayConfig" -}}
-{{- $root := . -}}
-{{- $g := $root.Values.litellmConfig -}}
+{{- define "azimuth-inference.gatewayModelListItem" }}
+  - model_name: {{ .modelName | quote }}
+    litellm_params:
+      model: {{ printf "openai/%s" .modelName | quote }}
+      api_base: {{ .apiBase | quote }}
+      api_key: {{ .apiKey }}
+      timeout: {{ .timeout }}
+      stream_timeout: {{ .streamTimeout }}
+    model_info:
+      id: {{ .id | quote }}
+      {{- with .maxInputTokens }}
+      max_input_tokens: {{ . }}
+      {{- end }}
+      {{- with .mode }}
+      mode: {{ . }}
+      {{- end }}
+{{- end }}
+
+{{- define "azimuth-inference.standardGatewayModelList" }}
 model_list:
+{{- $root := . }}
+{{- $g := $root.Values.litellmConfig }}
 {{- range $model := (include "azimuth-inference.models" $root | fromYaml).models }}
 {{- $ctx := dict "root" $root "model" $model }}
 {{- $profile := include "azimuth-inference.modelProfile" $ctx | fromYaml }}
 {{- $alias := include "azimuth-inference.modelAlias" $ctx }}
 {{- $sts := include "azimuth-inference.modelFullname" $ctx }}
 {{- range $i := until (int $model.replicas) }}
-  - model_name: {{ $alias | quote }}
-    litellm_params:
-      model: {{ printf "openai/%s" $alias | quote }}
-      api_base: {{ printf "http://%s-%d.%s.svc.cluster.local/v1" $sts $i $root.Release.Namespace | quote }}
-      api_key: os.environ/BACKEND_API_KEY
-      timeout: {{ $g.timeouts.request }}
-      stream_timeout: {{ $g.timeouts.stream }}
-    model_info:
-      id: {{ printf "%s-%d" $sts $i | quote }}
-      max_input_tokens: {{ div (int $profile.contextSize) (int $profile.parallel) }}
+{{- $apiBase := printf "http://%s-%d.%s.svc.cluster.local/v1" $sts $i $root.Release.Namespace }}
+{{- $id := printf "%s-%d" $sts $i }}
+{{- $maxTokens := div (int $profile.contextSize) (int $profile.parallel) }}
+{{- include "azimuth-inference.gatewayModelListItem" (dict 
+    "modelName" $alias 
+    "apiBase" $apiBase 
+    "apiKey" "os.environ/BACKEND_API_KEY" 
+    "timeout" $g.timeouts.request 
+    "streamTimeout" $g.timeouts.stream 
+    "id" $id 
+    "maxInputTokens" $maxTokens
+) }}
 {{- end }}
 {{- end }}
+{{- end }}
+
+{{- define "azimuth-inference.vllmGatewayModelList" }}
+model_list:
+{{- if .Values.vllm.ttt.enabled }}
+{{- include "azimuth-inference.vllmBackendToGatewayModel" (dict "backend" .Values.vllm.ttt "backendType" "ttt" "Release" .Release) }}
+{{- end }}
+{{- if .Values.vllm.tti.enabled }}
+{{- include "azimuth-inference.vllmBackendToGatewayModel" (dict "backend" .Values.vllm.tti "backendType" "tti" "Release" .Release) }}
+{{- end }}
+{{- end }}
+
+{{- define "azimuth-inference.gatewayModelList" }}
+{{- if and .Values.vllm .Values.vllm.enabled }}
+{{- include "azimuth-inference.vllmGatewayModelList" . }}
+{{- else }}
+{{- include "azimuth-inference.standardGatewayModelList" . }}
+{{- end }}
+{{- end }}
+
+{{- define "azimuth-inference.vllmBackendToGatewayModel" }}
+{{- $modelName := .backend.huggingface.model }}
+{{- $backendType := .backendType }}
+{{- $apiBase := printf "http://%s-%s.%s.svc.cluster.local/v1" .Release.Name $backendType .Release.Namespace }}
+{{- $id := printf "%s-%s" .Release.Name $backendType }}
+{{- $mode := "" }}
+{{- if eq $backendType "tti" }}{{ $mode = "image_generation" }}{{ end }}
+{{- include "azimuth-inference.gatewayModelListItem" (dict 
+    "modelName" $modelName 
+    "apiBase" $apiBase 
+    "apiKey" "none" 
+    "timeout" 600 
+    "streamTimeout" 600 
+    "id" $id 
+    "maxInputTokens" .backend.modelMaxContentLength 
+    "mode" $mode
+) }}
+{{- end }}
+
+{{- define "azimuth-inference.gatewayConfig" -}}
+{{- $root := . -}}
+{{- $g := $root.Values.litellmConfig -}}
+
+{{ include "azimuth-inference.gatewayModelList" $root }}
 
 router_settings:
   routing_strategy: {{ $g.router.routingStrategy }}

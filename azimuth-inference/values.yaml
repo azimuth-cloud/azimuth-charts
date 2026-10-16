@@ -7,8 +7,11 @@ models:
 # Takes precedence over .Values.models if set
 azimuthUIModelsCSL: ""
 
-llamaCpp:
+vllm:
   enabled: true
+
+llamaCpp:
+  enabled: false
 
   image:
     repository: ghcr.io/ggml-org/llama.cpp
