@@ -1,16 +1,21 @@
 apiVersion: v2
 name: azimuth-inference
-description: Curated Kubernetes-native llama.cpp inference runtimes for Azimuth.
+description: Kubernetes LLM inference serving with API gateway and chat interface.
 type: application
 version: 0.1.0
 appVersion: local
 annotations:
   azimuth.stackhpc.com/label: Inference Runtime
-icon: https://raw.githubusercontent.com/ggml-org/llama.cpp/master/media/llama1-icon.png
+icon: https://cdn.prod.website-files.com/69eb241da3f923869c226875/6abe9abb28fa564ed98ae7ed_litellm-logo-blue.png
 dependencies:
   - repository: https://helm.openwebui.com/
     name: open-webui
     version: 16.1.0
   - repository: oci://ghcr.io/berriai
     name: litellm-helm
-    version: 1.98.0
+    version: 1.106.0
+  - repository: https://stackhpc.github.io/azimuth-llm
+    name: azimuth-llm-omni-backend
+    version: 0.10.6-dev.0.update-vllm-omni.20
+    condition: vllm.enabled
+    alias: vllm

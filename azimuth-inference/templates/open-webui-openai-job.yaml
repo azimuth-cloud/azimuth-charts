@@ -41,8 +41,8 @@ spec:
               -H "Authorization: Bearer ${LITELLM_MASTER_KEY}" \
               -H "Content-Type: application/json" \
               -d '{
-                "key_alias": "open-webui-key",
-                {{- if .Values.openWebUIHostedModelsOnly }}
+                "key_alias": "open-webui-key"
+                {{- if .Values.openWebUIHostedModelsOnly }},
                 "models": {{ include "azimuth-inference.modelAliases" . }}
                 {{- end }}
               }')
