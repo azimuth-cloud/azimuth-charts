@@ -1,6 +1,6 @@
 apiVersion: v2
 name: azimuth-inference
-description: Curated Kubernetes-native llama.cpp inference runtimes for Azimuth.
+description: Kubernetes LLM inference serving with API gateway and chat interface.
 type: application
 version: 0.1.0
 appVersion: local
