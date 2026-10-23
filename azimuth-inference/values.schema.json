@@ -45,8 +45,7 @@
             "api": {
               "type": "object",
               "required": [
-                "cacheVolume",
-                "azimuthNodeGroupSelector"
+                "cacheVolume"
               ],
               "properties": {
                 "cacheVolume": {
