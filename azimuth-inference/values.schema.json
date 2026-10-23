@@ -31,12 +31,10 @@
                   "title": "HuggingFace model"
                 },
                 "chatTemplate": {
-                  "type": "string",
                   "description": "Custom chat template for the model. Leave empty to use the model's default.",
                   "title": "Chat template file"
                 },
                 "secretName": {
-                  "type": "string",
                   "description": "Optional name of existing secret containing HUGGING_FACE_HUB_TOKEN environment variable. Must be in namespace with the same name as platform.",
                   "title": "Existing HuggingFace token secret"
                 }
@@ -79,12 +77,10 @@
                   }
                 },
                 "modelMaxContextLength": {
-                  "type": "integer",
                   "description": "Max context length for the vLLM model.",
                   "title": "Max Context Length"
                 },
                 "azimuthNodeGroupSelector": {
-                  "type": "string",
                   "description": "Optional name of node group defined in Azimuth UI to schedule inference engine on.",
                   "title": "Node Group",
                   "default": ""
