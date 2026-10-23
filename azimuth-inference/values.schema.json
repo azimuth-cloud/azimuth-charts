@@ -1,44 +1,100 @@
 {
   "$schema": "http://json-schema.org/schema#",
   "type": "object",
+  "required": [
+    "vllm"
+  ],
   "properties": {
-    "modelStorage": {
+    "vllm": {
       "type": "object",
+      "required": [
+        "ttt"
+      ],
       "properties": {
-        "existingClaim": {
-          "type": "string",
-          "title": "Existing model PVC",
-          "description": "(Optional) An existing PVC containing /models/gguf. ReadWriteOnce, so it is valid for a single replica of a single model.",
-          "default": ""
-        },
-        "storageClass": {
-          "type": "string",
-          "title": "Model storage class",
-          "default": "csi-cinder"
-        },
-        "size": {
-          "type": "string",
-          "title": "Model volume size",
-          "description": "Capacity requested for each dynamically provisioned model volume. One model per volume.",
-          "default": "40Gi"
+        "ttt": {
+          "type": "object",
+          "required": [
+            "huggingface",
+            "api"
+          ],
+          "properties": {
+            "huggingface": {
+              "type": "object",
+              "required": [
+                "model"
+              ],
+              "properties": {
+                "model": {
+                  "type": "string",
+                  "description": "The Hugging Face model to use",
+                  "default": "mistralai/Mistral-7B-Instruct-v0.3",
+                  "title": "HuggingFace model"
+                },
+                "chatTemplate": {
+                  "type": "string",
+                  "description": "Custom chat template for the model. Leave empty to use the model's default.",
+                  "title": "Chat template file"
+                },
+                "secretName": {
+                  "type": "string",
+                  "description": "Optional name of existing secret containing HUGGING_FACE_HUB_TOKEN environment variable. Must be in namespace with the same name as platform.",
+                  "title": "Existing HuggingFace token secret"
+                }
+              }
+            },
+            "api": {
+              "type": "object",
+              "required": [
+                "cacheVolume",
+                "azimuthNodeGroupSelector"
+              ],
+              "properties": {
+                "cacheVolume": {
+                  "type": "object",
+                  "required": [
+                    "resources"
+                  ],
+                  "properties": {
+                    "resources": {
+                      "type": "object",
+                      "required": [
+                        "requests"
+                      ],
+                      "properties": {
+                        "requests": {
+                          "type": "object",
+                          "required": [
+                            "storage"
+                          ],
+                          "properties": {
+                            "storage": {
+                              "type": "string",
+                              "description": "Storage request for the cache volume used for pulling models.",
+                              "default": "40Gi",
+                              "title": "Model Storage"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "modelMaxContextLength": {
+                  "type": "integer",
+                  "description": "Max context length for the vLLM model.",
+                  "title": "Max Context Length"
+                },
+                "azimuthNodeGroupSelector": {
+                  "type": "string",
+                  "description": "Optional name of node group defined in Azimuth UI to schedule inference engine on.",
+                  "title": "Node Group",
+                  "default": ""
+                }
+              }
+            }
+          }
         }
       }
-    },
-    "scheduling": {
-      "type": "object",
-      "properties": {
-        "azimuthNodeGroupSelector": {
-          "type": "string",
-          "title": "GPU node group",
-          "description": "(Optional) Node group defined in your Kubernetes platform to schedule inference engine on."
-        }
-      }
-    },
-    "azimuthUIModelsCSL": {
-      "type": "string",
-      "title": "Model profiles (comma separated list)",
-      "default": ""
     }
-  },
-  "required": ["modelStorage", "scheduling"]
+  }
 }

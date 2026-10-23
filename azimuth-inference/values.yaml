@@ -1,24 +1,33 @@
-# Model aliases must be unique. Quote a reasoning override of "off" so YAML does
-# not parse it as a boolean.
-models:
-  - name: qwen36-35b-a3b
-
-# Comma seperated list of model profile names to allow input through Azimuth UI
-# Takes precedence over .Values.models if set
-azimuthUIModelsCSL: ""
-
 vllm:
   enabled: true
   ttt:
     huggingface:
       model: mistralai/Mistral-7B-Instruct-v0.3
+      chatTemplate:
+      secretName:
+    api:
+      cacheVolume:
+        resources:
+          requests:
+            storage: 40Gi
+      modelMaxContextLength:
+      azimuthNodeGroupSelector: ""
   tti:
-    enabled: true
+    enabled: false
     huggingface:
       model: &imageModel Qwen/Qwen-Image
 
 llamaCpp:
   enabled: false
+
+  # Model aliases must be unique. Quote a reasoning override of "off" so YAML does
+  # not parse it as a boolean.
+  models:
+    - name: qwen36-35b-a3b
+
+  # Comma seperated list of model profile names to allow input through Azimuth UI
+  # Takes precedence over .Values.models if set
+  azimuthUIModelsCSL: ""
 
   image:
     repository: ghcr.io/ggml-org/llama.cpp
@@ -259,7 +268,7 @@ zenith:
     # the authentication boundary.
     skipAuth: true
     label: LLM API
-    iconUrl: https://raw.githubusercontent.com/BerriAI/litellm/v1.96.2/litellm/proxy/logo.jpg
+    iconUrl: https://cdn.prod.website-files.com/69eb241da3f923869c226875/6abe9abcdc0377fee91f4f82_litellm-monogram-blue.png
     description: OpenAI-compatible inference API for every model this platform serves. Authenticate with an API key.
 
 open-webui:

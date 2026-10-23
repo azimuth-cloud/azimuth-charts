@@ -244,17 +244,17 @@ general_settings:
 {{- end }}
 
 {{- define "azimuth-inference.modelList" -}}
-{{- if .Values.azimuthUIModelsCSL -}}
+{{- if .Values.llamaCpp.azimuthUIModelsCSL -}}
   {{- $models := list -}}
-  {{- range $item := splitList "," .Values.azimuthUIModelsCSL -}}
+  {{- range $item := splitList "," .Values.llamaCpp.azimuthUIModelsCSL -}}
     {{- $trimmedItem := trim $item -}}
     {{- if $trimmedItem -}}
       {{- $models = append $models (dict "name" $trimmedItem) -}}
     {{- end -}}
   {{- end -}}
   {{- toYaml $models -}}
-{{- else if .Values.models -}}
-  {{- toYaml .Values.models -}}
+{{- else if .Values.llamaCpp.models -}}
+  {{- toYaml .Values.llamaCpp.models -}}
 {{- end -}}
 {{- end -}}
 
