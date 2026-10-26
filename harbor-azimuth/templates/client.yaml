@@ -1,0 +1,9 @@
+apiVersion: zenith.stackhpc.com/v1alpha1
+kind: Client
+metadata:
+  name: {{ include "harbor-azimuth.fullname" . }}
+  labels: {{ include "harbor-azimuth.labels" . | nindent 4 }}
+spec:
+  reservationName: {{ include "harbor-azimuth.fullname" . }}
+  upstream:
+    serviceName: {{ .Values.harbor.expose.clusterIP.name }}
