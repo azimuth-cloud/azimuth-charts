@@ -40,7 +40,7 @@ app.kubernetes.io/managed-by: {{ .root.Release.Service }}
 {{- end }}
 
 {{- define "azimuth-inference.image" -}}
-{{- printf "%s@%s" .Values.image.repository .Values.image.digest -}}
+{{- printf "%s@%s" .Values.llamaCpp.image.repository .Values.llamaCpp.image.digest -}}
 {{- end }}
 
 {{- define "azimuth-inference.gatewayFullname" -}}
@@ -58,28 +58,92 @@ app.kubernetes.io/managed-by: {{ .root.Release.Service }}
 {{- end -}}
 {{- end }}
 
-{{- define "azimuth-inference.gatewayConfig" -}}
-{{- $root := . -}}
-{{- $g := $root.Values.litellmConfig -}}
+{{- define "azimuth-inference.gatewayModelListItem" }}
+  - model_name: {{ .modelName | quote }}
+    litellm_params:
+      model: {{ printf "openai/%s" .modelName | quote }}
+      api_base: {{ .apiBase | quote }}
+      api_key: {{ .apiKey }}
+      timeout: {{ .timeout }}
+      stream_timeout: {{ .streamTimeout }}
+    model_info:
+      id: {{ .id | quote }}
+      {{- with .maxInputTokens }}
+      max_input_tokens: {{ . }}
+      {{- end }}
+      {{- with .mode }}
+      mode: {{ . }}
+      {{- end }}
+{{- end }}
+
+{{- define "azimuth-inference.standardGatewayModelList" }}
 model_list:
+{{- $root := . }}
+{{- $g := $root.Values.litellmConfig }}
 {{- range $model := (include "azimuth-inference.models" $root | fromYaml).models }}
 {{- $ctx := dict "root" $root "model" $model }}
 {{- $profile := include "azimuth-inference.modelProfile" $ctx | fromYaml }}
 {{- $alias := include "azimuth-inference.modelAlias" $ctx }}
 {{- $sts := include "azimuth-inference.modelFullname" $ctx }}
 {{- range $i := until (int $model.replicas) }}
-  - model_name: {{ $alias | quote }}
-    litellm_params:
-      model: {{ printf "openai/%s" $alias | quote }}
-      api_base: {{ printf "http://%s-%d.%s.svc.cluster.local/v1" $sts $i $root.Release.Namespace | quote }}
-      api_key: os.environ/BACKEND_API_KEY
-      timeout: {{ $g.timeouts.request }}
-      stream_timeout: {{ $g.timeouts.stream }}
-    model_info:
-      id: {{ printf "%s-%d" $sts $i | quote }}
-      max_input_tokens: {{ div (int $profile.contextSize) (int $profile.parallel) }}
+{{- $apiBase := printf "http://%s-%d.%s.svc.cluster.local/v1" $sts $i $root.Release.Namespace }}
+{{- $id := printf "%s-%d" $sts $i }}
+{{- $maxTokens := div (int $profile.contextSize) (int $profile.parallel) }}
+{{- include "azimuth-inference.gatewayModelListItem" (dict 
+    "modelName" $alias 
+    "apiBase" $apiBase 
+    "apiKey" "os.environ/BACKEND_API_KEY" 
+    "timeout" $g.timeouts.request 
+    "streamTimeout" $g.timeouts.stream 
+    "id" $id 
+    "maxInputTokens" $maxTokens
+) }}
 {{- end }}
 {{- end }}
+{{- end }}
+
+{{- define "azimuth-inference.vllmGatewayModelList" }}
+model_list:
+{{- if .Values.vllm.ttt.enabled }}
+{{- include "azimuth-inference.vllmBackendToGatewayModel" (dict "backend" .Values.vllm.ttt "backendType" "ttt" "Release" .Release) }}
+{{- end }}
+{{- if .Values.vllm.tti.enabled }}
+{{- include "azimuth-inference.vllmBackendToGatewayModel" (dict "backend" .Values.vllm.tti "backendType" "tti" "Release" .Release) }}
+{{- end }}
+{{- end }}
+
+{{- define "azimuth-inference.gatewayModelList" }}
+{{- if and .Values.vllm .Values.vllm.enabled }}
+{{- include "azimuth-inference.vllmGatewayModelList" . }}
+{{- else }}
+{{- include "azimuth-inference.standardGatewayModelList" . }}
+{{- end }}
+{{- end }}
+
+{{- define "azimuth-inference.vllmBackendToGatewayModel" }}
+{{- $modelName := .backend.huggingface.model }}
+{{- $backendType := .backendType }}
+{{- $apiBase := printf "http://%s-%s.%s.svc.cluster.local/v1" .Release.Name $backendType .Release.Namespace }}
+{{- $id := printf "%s-%s" .Release.Name $backendType }}
+{{- $mode := "" }}
+{{- if eq $backendType "tti" }}{{ $mode = "image_generation" }}{{ end }}
+{{- include "azimuth-inference.gatewayModelListItem" (dict 
+    "modelName" $modelName 
+    "apiBase" $apiBase 
+    "apiKey" "none" 
+    "timeout" 600 
+    "streamTimeout" 600 
+    "id" $id 
+    "maxInputTokens" .backend.modelMaxContentLength 
+    "mode" $mode
+) }}
+{{- end }}
+
+{{- define "azimuth-inference.gatewayConfig" -}}
+{{- $root := . -}}
+{{- $g := $root.Values.litellmConfig -}}
+
+{{ include "azimuth-inference.gatewayModelList" $root }}
 
 router_settings:
   routing_strategy: {{ $g.router.routingStrategy }}
@@ -132,9 +196,9 @@ general_settings:
 {{- $name := required "every models[] entry must set name" $entry.name -}}
 {{- $base := dict
       "replicas" 1
-      "modelStorage" (deepCopy $root.Values.modelStorage)
-      "scheduling" (deepCopy $root.Values.scheduling)
-      "service" (deepCopy $root.Values.service)
+      "modelStorage" (deepCopy $root.Values.llamaCpp.modelStorage)
+      "scheduling" (deepCopy $root.Values.llamaCpp.scheduling)
+      "service" (deepCopy $root.Values.llamaCpp.service)
 -}}
 {{- $model := mergeOverwrite $base (omit (deepCopy $entry) "name") -}}
 {{- $_ := set $model "name" $name -}}
@@ -158,7 +222,7 @@ general_settings:
 {{- fail (printf "duplicate models[].name %q" $name) -}}
 {{- end -}}
 {{- $_ := set $seenNames $name true -}}
-{{- if not (hasKey $root.Values.profiles $model.profile) -}}
+{{- if not (hasKey $root.Values.llamaCpp.profiles $model.profile) -}}
 {{- fail (printf "model %q references unknown profile %q" $name $model.profile) -}}
 {{- end -}}
 {{- $_ := include "azimuth-inference.modelArtifacts" (dict "root" $root "model" $model) -}}
@@ -180,17 +244,17 @@ general_settings:
 {{- end }}
 
 {{- define "azimuth-inference.modelList" -}}
-{{- if .Values.azimuthUIModelsCSL -}}
+{{- if .Values.llamaCpp.azimuthUIModelsCSL -}}
   {{- $models := list -}}
-  {{- range $item := splitList "," .Values.azimuthUIModelsCSL -}}
+  {{- range $item := splitList "," .Values.llamaCpp.azimuthUIModelsCSL -}}
     {{- $trimmedItem := trim $item -}}
     {{- if $trimmedItem -}}
       {{- $models = append $models (dict "name" $trimmedItem) -}}
     {{- end -}}
   {{- end -}}
   {{- toYaml $models -}}
-{{- else if .Values.models -}}
-  {{- toYaml .Values.models -}}
+{{- else if .Values.llamaCpp.models -}}
+  {{- toYaml .Values.llamaCpp.models -}}
 {{- end -}}
 {{- end -}}
 
@@ -209,7 +273,7 @@ azimuth.stackhpc.com/inference-model: {{ .model.name }}
 {{- end }}
 
 {{- define "azimuth-inference.modelProfile" -}}
-{{- $profile := index .root.Values.profiles .model.profile -}}
+{{- $profile := index .root.Values.llamaCpp.profiles .model.profile -}}
 {{- required (printf "unknown inference profile %q" .model.profile) $profile | toYaml -}}
 {{- end }}
 
@@ -283,7 +347,7 @@ azimuth.stackhpc.com/inference-model: {{ .model.name }}
 
 {{- define "azimuth-inference.modelAliases" -}}
 {{- $models := fromYamlArray ( include "azimuth-inference.modelList" . ) -}}
-{{- $profiles := .Values.profiles -}}
+{{- $profiles := .Values.llamaCpp.profiles -}}
 {{- $aliases := list -}}
 {{- range $model := $models -}}
   {{- $profile := index $profiles $model.name -}}

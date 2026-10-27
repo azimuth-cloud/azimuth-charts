@@ -1,3 +1,4 @@
+{{- if $.Values.llamaCpp.enabled }}
 {{- range $model := (include "azimuth-inference.models" $ | fromYaml).models }}
 {{- $ctx := dict "root" $ "model" $model }}
 ---
@@ -16,4 +17,5 @@ spec:
       port: 80
       targetPort: api
       protocol: TCP
+{{- end }}
 {{- end }}
