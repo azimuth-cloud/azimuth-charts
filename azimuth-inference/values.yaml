@@ -321,8 +321,8 @@ open-webui:
   - name: IMAGE_GENERATION_MODEL
     value: *imageModel
   # vLLM seems to need legacy tool calling
-  - name: DEFAULT_MODEL_METADATA
-    value: '{"capabilities":{"built_in_tools":false}}'
+  - name: DEFAULT_MODEL_PARAMS
+    value: '{"function_calling": "legacy"}'
   - name: ENABLE_PERSISTENT_CONFIG
     value: "False"
   sso:

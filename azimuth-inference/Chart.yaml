@@ -16,6 +16,6 @@ dependencies:
     version: 1.106.0
   - repository: https://stackhpc.github.io/azimuth-llm
     name: azimuth-llm-omni-backend
-    version: 0.10.6-dev.0.update-vllm-omni.20
+    version: 0.10.6-dev.0.update-vllm-omni.23
     condition: vllm.enabled
     alias: vllm
