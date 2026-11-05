@@ -49,7 +49,8 @@
                 "cacheVolume": {
                   "type": "object",
                   "required": [
-                    "resources"
+                    "resources",
+                    "storageClassName"
                   ],
                   "properties": {
                     "resources": {
@@ -73,6 +74,12 @@
                           }
                         }
                       }
+                    },
+                    "storageClassName": {
+                      "type": "string",
+                      "description": "Name of storage class used to provision volumes for model cache",
+                      "default": "csi-cinder",
+                      "title": "Model StorageClass name"
                     }
                   }
                 },
