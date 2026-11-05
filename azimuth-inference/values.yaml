@@ -194,7 +194,7 @@ litellm-helm:
   migrationJob:
     extraInitContainers:
     - name: wait-for-db
-      image: postgres:15-alpine
+      image: postgres:15
       command: 
         - 'sh'
         - '-c'
