@@ -90,7 +90,8 @@
                 "gpus": {
                   "description": "Number of GPUs to request.",
                   "title": "GPUs",
-                  "default": 1
+                  "default": "1",
+                  "type": "string"
                 },
                 "azimuthNodeGroupSelector": {
                   "description": "Optional name of node group defined in Azimuth UI to schedule inference engine on.",
