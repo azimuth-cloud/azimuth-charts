@@ -6,6 +6,7 @@ vllm:
       chatTemplate:
       secretName:
     api:
+      gpus: 1
       cacheVolume:
         resources:
           requests:

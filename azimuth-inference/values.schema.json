@@ -87,6 +87,11 @@
                   "description": "Max context length for the vLLM model.",
                   "title": "Max Context Length"
                 },
+                "gpus": {
+                  "description": "Number of GPUs to request.",
+                  "title": "GPUs",
+                  "default": 1
+                },
                 "azimuthNodeGroupSelector": {
                   "description": "Optional name of node group defined in Azimuth UI to schedule inference engine on.",
                   "title": "Node Group",
