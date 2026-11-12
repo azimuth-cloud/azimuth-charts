@@ -78,8 +78,8 @@
                     },
                     "storageClassName": {
                       "type": "string",
-                      "description": "Name of StorageClass used to provision volumes for model cache. Defaults to the cluster default.",
-                      "default": "",
+                      "description": "Name of StorageClass used to provision volumes for model cache.",
+                      "default": "csi-cinder",
                       "title": "Model StorageClass name"
                     }
                   }

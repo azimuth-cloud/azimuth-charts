@@ -11,7 +11,7 @@ vllm:
         resources:
           requests:
             storage: 40Gi
-        storageClassName: ""
+        storageClassName: "csi-cinder"
       modelMaxContextLength:
       azimuthNodeGroupSelector: ""
   tti:

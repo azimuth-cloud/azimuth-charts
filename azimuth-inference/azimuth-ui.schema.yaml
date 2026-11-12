@@ -16,7 +16,7 @@ controls:
     displayUnits: GB
   /vllm/ttt/api/cacheVolume/storageClassName:
     type: TextControl
-    required: false
+    required: true
   /vllm/ttt/api/modelMaxContextLength:
     type: TextControl
     required: false
