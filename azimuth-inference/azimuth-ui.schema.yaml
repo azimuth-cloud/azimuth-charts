@@ -1,17 +1,60 @@
 controls:
-  /modelStorage/existingClaim:
-    type: TextControl
-    required: false
-  /modelStorage/storageClass:
-    type: TextControl
-  /modelStorage/size:
-    type: TextControl
-  /scheduling/azimuthNodeGroupSelector:
+  /vllm/ttt/huggingface/model:
     type: TextControl
     required: true
+  /vllm/ttt/huggingface/chatTemplate:
+    type: TextControl
+    required: false
+  /vllm/ttt/huggingface/secretName:
+    type: TextControl
+    required: false
+  /vllm/ttt/api/cacheVolume/resources/requests/storage:
+    type: NumberWithUnitsControl
+    units: Gi
+    minimum: 1
+    step: 1
+    displayUnits: GB
+  /vllm/ttt/api/cacheVolume/storageClassName:
+    type: TextControl
+    required: true
+  /vllm/ttt/api/modelMaxContextLength:
+    type: TextControl
+    required: false
+  /vllm/ttt/api/gpus:
+    type: NumberControl
+    required: true
+  /vllm/ttt/api/azimuthNodeGroupSelector:
+    type: TextControl
+    required: false
+  /litellmDB/storageClassName:
+    type: TextControl
+    required: false
+  /litellmDB/size:
+    type: NumberWithUnitsControl
+    units: Gi
+    minimum: 1
+    step: 1
+    displayUnits: GB
+  /open-webui/persistence/storageClass:
+    type: TextControl
+    required: false
+  /open-webui/persistence/size:
+    type: NumberWithUnitsControl
+    units: Gi
+    minimum: 1
+    step: 1
+    displayUnits: GB
 
 sortOrder:
-  - /scheduling/azimuthNodeGroupSelector
-  - /modelStorage/existingClaim
-  - /modelStorage/storageClass
-  - /modelStorage/size
+  - /vllm/ttt/huggingface/model
+  - /vllm/ttt/huggingface/secretName
+  - /vllm/ttt/api/cacheVolume/resources/requests/storage
+  - /vllm/ttt/api/cacheVolume/storageClassName
+  - /vllm/ttt/api/gpus
+  - /vllm/ttt/api/modelMaxContextLength
+  - /vllm/ttt/api/azimuthNodeGroupSelector
+  - /litellmDB/size
+  - /litellmDB/storageClassName
+  - /open-webui/persistence/size
+  - /open-webui/persistence/storageClass
+  - /vllm/ttt/huggingface/chatTemplate

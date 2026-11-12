@@ -1,3 +1,4 @@
+{{- if $.Values.llamaCpp.enabled }}
 {{- if .Values.monitoring.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -26,4 +27,5 @@ spec:
           sourceLabels:
             - __meta_kubernetes_service_label_azimuth_stackhpc_com_inference_model
           targetLabel: model
+{{- end }}
 {{- end }}

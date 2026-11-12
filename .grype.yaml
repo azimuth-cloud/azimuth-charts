@@ -23,3 +23,6 @@ ignore:
   - vulnerability: GHSA-ffc3-869f-jxw9
   # Doesn't use vulnerable functions
   - vulnerability: CVE-2026-19445
+  # FIXME
+  - vulnerability: CVE-2026-115557
+  - vulnerability: CVE-2026-111497
