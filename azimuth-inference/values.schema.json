@@ -37,7 +37,7 @@
                   "title": "Chat template file"
                 },
                 "secretName": {
-                  "description": "Optional name of existing secret containing HUGGING_FACE_HUB_TOKEN environment variable. Must be in namespace with the same name as platform.",
+                  "description": "Optional name of existing secret containing HUGGING_FACE_HUB_TOKEN environment variable. Must be in a namespace with the same name as the platform.",
                   "title": "Existing HuggingFace token secret"
                 }
               }
@@ -51,8 +51,7 @@
                 "cacheVolume": {
                   "type": "object",
                   "required": [
-                    "resources",
-                    "storageClassName"
+                    "resources"
                   ],
                   "properties": {
                     "resources": {
@@ -69,7 +68,7 @@
                           "properties": {
                             "storage": {
                               "type": "string",
-                              "description": "Storage request for the cache volume used for pulling models.",
+                              "description": "Storage requested for the cache volume used for pulling models.",
                               "default": "40Gi",
                               "title": "Model Storage"
                             }
