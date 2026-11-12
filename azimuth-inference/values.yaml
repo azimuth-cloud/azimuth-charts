@@ -11,7 +11,7 @@ vllm:
         resources:
           requests:
             storage: 40Gi
-        storageClassName: csi-cinder
+        storageClassName: ""
       modelMaxContextLength:
       azimuthNodeGroupSelector: ""
   tti:
@@ -218,6 +218,7 @@ litellmDB:
   user: litellm
 
   size: 8Gi
+  storageClassName: ""
 
   resources:
     requests:
@@ -333,6 +334,7 @@ open-webui:
       enabled: true
       emailHeader: X-Remote-User
   persistence:
+    storageClass: ""
     size: 8Gi
   ollama:
     enabled: false

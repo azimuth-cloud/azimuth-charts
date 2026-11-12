@@ -116,3 +116,4 @@ spec:
         resources:
           requests:
             storage: {{ $db.size }}
+        storageClassName: {{ $db.storageClassName }}

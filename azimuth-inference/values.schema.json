@@ -2,7 +2,9 @@
   "$schema": "http://json-schema.org/schema#",
   "type": "object",
   "required": [
-    "vllm"
+    "vllm",
+    "litellmDB",
+    "open-webui"
   ],
   "properties": {
     "vllm": {
@@ -77,8 +79,8 @@
                     },
                     "storageClassName": {
                       "type": "string",
-                      "description": "Name of storage class used to provision volumes for model cache",
-                      "default": "csi-cinder",
+                      "description": "Name of StorageClass used to provision volumes for model cache. Defaults to the cluster default.",
+                      "default": "",
                       "title": "Model StorageClass name"
                     }
                   }
@@ -99,6 +101,45 @@
                   "default": ""
                 }
               }
+            }
+          }
+        }
+      }
+    },
+    "litellmDB": {
+      "type": "object",
+      "properties": {
+        "storageClassName": {
+          "type": "string",
+          "description": "Name of StorageClass used for the LiteLLM database. Defaults to the cluster default.",
+          "default": "",
+          "title": "LiteLLM StorageClass name"
+        },
+        "size": {
+          "type": "string",
+          "description": "Size of the LiteLLM database.",
+          "default": "8Gi",
+          "title": "LiteLLM database size"
+        }
+      }
+    },
+    "open-webui": {
+      "type": "object",
+      "properties": {
+        "persistence": {
+          "type": "object",
+          "properties": {
+            "storageClass":{
+              "type": "string",
+              "description": "Name of StorageClass for Open WebUI's storage. Defaults to the cluster default.",
+              "default": "",
+              "title": "Open WebUI StorageClass name"
+            },
+            "size":{
+              "type": "string",
+              "description": "Size of Open WebUI's storage for user chats and RAG.",
+              "default": "8Gi",
+              "title": "Open WebUI storage"
             }
           }
         }
