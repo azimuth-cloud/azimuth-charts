@@ -34,6 +34,7 @@ jobs:
           environment-prefix: charts-ci
           target-cloud: ${{ vars.TARGET_CLOUD }}
           extra-vars: |
+            # Only run app tests on final cluster in k8s suite
             generate_tests_caas_suite_enabled: false
             generate_tests_kubernetes_suite_enabled: true
             generate_tests_kubernetes_apps_suite_enabled: true
