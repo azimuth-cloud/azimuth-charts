@@ -1,4 +1,5 @@
-{{- if $.Values.podDisruptionBudget.enabled }}
+{{- if $.Values.llamaCpp.enabled }}
+{{- if $.Values.llamaCpp.podDisruptionBudget.enabled }}
 {{- range $model := (include "azimuth-inference.models" $ | fromYaml).models }}
 {{- $ctx := dict "root" $ "model" $model }}
 ---
@@ -9,9 +10,10 @@ metadata:
   labels:
     {{- include "azimuth-inference.modelLabels" $ctx | nindent 4 }}
 spec:
-  maxUnavailable: {{ $.Values.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ $.Values.llamaCpp.podDisruptionBudget.maxUnavailable }}
   selector:
     matchLabels:
       {{- include "azimuth-inference.modelSelectorLabels" $ctx | nindent 6 }}
+{{- end }}
 {{- end }}
 {{- end }}

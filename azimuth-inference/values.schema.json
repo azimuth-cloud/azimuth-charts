@@ -1,44 +1,148 @@
 {
   "$schema": "http://json-schema.org/schema#",
   "type": "object",
+  "required": [
+    "vllm",
+    "litellmDB",
+    "open-webui"
+  ],
   "properties": {
-    "modelStorage": {
+    "vllm": {
+      "type": "object",
+      "required": [
+        "ttt"
+      ],
+      "properties": {
+        "ttt": {
+          "type": "object",
+          "required": [
+            "huggingface",
+            "api"
+          ],
+          "properties": {
+            "huggingface": {
+              "type": "object",
+              "required": [
+                "model"
+              ],
+              "properties": {
+                "model": {
+                  "type": "string",
+                  "description": "The Hugging Face model to use",
+                  "default": "mistralai/Mistral-7B-Instruct-v0.3",
+                  "title": "HuggingFace model"
+                },
+                "chatTemplate": {
+                  "description": "Custom chat template for the model. Leave empty to use the model's default.",
+                  "title": "Chat template file"
+                },
+                "secretName": {
+                  "description": "Optional name of existing secret containing HUGGING_FACE_HUB_TOKEN environment variable. Must be in a namespace with the same name as the platform.",
+                  "title": "Existing HuggingFace token secret"
+                }
+              }
+            },
+            "api": {
+              "type": "object",
+              "required": [
+                "cacheVolume"
+              ],
+              "properties": {
+                "cacheVolume": {
+                  "type": "object",
+                  "required": [
+                    "resources"
+                  ],
+                  "properties": {
+                    "resources": {
+                      "type": "object",
+                      "required": [
+                        "requests"
+                      ],
+                      "properties": {
+                        "requests": {
+                          "type": "object",
+                          "required": [
+                            "storage"
+                          ],
+                          "properties": {
+                            "storage": {
+                              "type": "string",
+                              "description": "Storage requested for the cache volume used for pulling models.",
+                              "default": "40Gi",
+                              "title": "Model Storage"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "storageClassName": {
+                      "type": "string",
+                      "description": "Name of StorageClass used to provision volumes for model cache.",
+                      "default": "csi-cinder",
+                      "title": "Model StorageClass name"
+                    }
+                  }
+                },
+                "modelMaxContextLength": {
+                  "description": "Max context length for the vLLM model.",
+                  "title": "Max Context Length"
+                },
+                "gpus": {
+                  "description": "Number of GPUs to request.",
+                  "title": "GPUs",
+                  "default": 1,
+                  "type": "integer"
+                },
+                "azimuthNodeGroupSelector": {
+                  "description": "Optional name of node group defined in Azimuth UI to schedule inference engine on.",
+                  "title": "Node Group",
+                  "default": ""
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "litellmDB": {
       "type": "object",
       "properties": {
-        "existingClaim": {
+        "storageClassName": {
           "type": "string",
-          "title": "Existing model PVC",
-          "description": "(Optional) An existing PVC containing /models/gguf. ReadWriteOnce, so it is valid for a single replica of a single model.",
-          "default": ""
-        },
-        "storageClass": {
-          "type": "string",
-          "title": "Model storage class",
-          "default": "csi-cinder"
+          "description": "Name of StorageClass used for the LiteLLM database. Defaults to the cluster default.",
+          "default": "",
+          "title": "LiteLLM StorageClass name"
         },
         "size": {
           "type": "string",
-          "title": "Model volume size",
-          "description": "Capacity requested for each dynamically provisioned model volume. One model per volume.",
-          "default": "40Gi"
+          "description": "Size of the LiteLLM database.",
+          "default": "8Gi",
+          "title": "LiteLLM database size"
         }
       }
     },
-    "scheduling": {
+    "open-webui": {
       "type": "object",
       "properties": {
-        "azimuthNodeGroupSelector": {
-          "type": "string",
-          "title": "GPU node group",
-          "description": "(Optional) Node group defined in your Kubernetes platform to schedule inference engine on."
+        "persistence": {
+          "type": "object",
+          "properties": {
+            "storageClass":{
+              "type": "string",
+              "description": "Name of StorageClass for Open WebUI's storage. Defaults to the cluster default.",
+              "default": "",
+              "title": "Open WebUI StorageClass name"
+            },
+            "size":{
+              "type": "string",
+              "description": "Size of Open WebUI's storage for user chats and RAG.",
+              "default": "8Gi",
+              "title": "Open WebUI storage"
+            }
+          }
         }
       }
-    },
-    "azimuthUIModelsCSL": {
-      "type": "string",
-      "title": "Model profiles (comma separated list)",
-      "default": ""
     }
-  },
-  "required": ["modelStorage", "scheduling"]
+  }
 }

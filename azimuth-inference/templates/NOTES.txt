@@ -1,0 +1,18 @@
+Azimuth Inference deploys models from HuggingFace onto vLLM inference engines
+and exposes their API through LiteLLM. Open WebUI provides a user-friendly
+chat interface for prompting deployed models.
+
+# API Access
+
+A virtual key can be generated for API access.
+
+1. Click on the LLM API link in the platform card.
+2. Follow the link at the top of the API landing page to the admin UI.
+3. Log in to the admin UI. The username is `admin` and the master key can be
+   extracted by running
+   `kubectl get secret litellm-secrets -n {{ .Release.Name }} -o yaml` and
+   Base64 decoding the PROXY_MASTER_KEY field.
+4. Navigate to Virtual Keys and create a key scoped to the deployed model.
+
+You can use this key to authenticate against the OpenAI-compatible API using the
+URL linked by the LLM API button.

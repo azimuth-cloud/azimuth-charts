@@ -1,3 +1,4 @@
+{{- if $.Values.llamaCpp.enabled }}
 {{- range $model := (include "azimuth-inference.models" $ | fromYaml).models }}
 {{- $ctx := dict "root" $ "model" $model }}
 {{- $profile := include "azimuth-inference.modelProfile" $ctx | fromYaml }}
@@ -26,12 +27,12 @@ spec:
       labels:
         {{- include "azimuth-inference.modelSelectorLabels" $ctx | nindent 8 }}
     spec:
-      terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ $.Values.llamaCpp.terminationGracePeriodSeconds }}
       {{- if not $storage.existingClaim }}
       initContainers:
         - name: acquire-model
           image: {{ include "azimuth-inference.image" $ | quote }}
-          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          imagePullPolicy: {{ $.Values.llamaCpp.image.pullPolicy }}
           command: ["/bin/sh", "-ec"]
           args:
             - |
@@ -78,7 +79,7 @@ spec:
       containers:
         - name: llama-server
           image: {{ include "azimuth-inference.image" $ | quote }}
-          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          imagePullPolicy: {{ $.Values.llamaCpp.image.pullPolicy }}
           args:
             - --host
             - 0.0.0.0
@@ -237,4 +238,5 @@ spec:
           requests:
             storage: {{ $storage.size }}
   {{- end }}
+{{- end }}
 {{- end }}
